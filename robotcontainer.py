@@ -8,7 +8,10 @@
 import commands2
 import commands2.button
 import commands2.cmd
+import wpilib
 
+from Commands.DriveCmd import DriveCmd
+from Subsystems.Swerve.SwerveDrive import SwerveDrive
 import constants
 
 
@@ -21,13 +24,13 @@ class RobotContainer:
     subsystems, commands, and button mappings) should be declared here.
     """
 
+
     def __init__(self) -> None:
-        # The robot's subsystems
-
-        # The driver's controller
-   
-
-        # Configure the button bindings
+        
+        self.swerveDrive = SwerveDrive()
+        self.driverController = wpilib.XboxController(0)
+        self.swerveDrive.setDefaultCommand(DriveCmd(self.swerveDrive, self.driverController.getLeftY, self.driverController.getRightX, self.driverController.getLeftX))
+        
         self.configureButtonBindings()
 
         

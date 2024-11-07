@@ -10,13 +10,13 @@ import wpilib
 import commands2
 import typing
 
-from Subsystems.Swerve.SwerveModule import SwerveModule
 from robotcontainer import RobotContainer
 
 
 class MyRobot(commands2.TimedCommandRobot):
     """
-    Robot class for frc 5494 2025 robot
+    Command v2 robots are encouraged to inherit from TimedCommandRobot, which
+    has an implementation of robotPeriodic which runs the scheduler for you
     """
 
     autonomousCommand: typing.Optional[commands2.Command] = None
@@ -29,28 +29,11 @@ class MyRobot(commands2.TimedCommandRobot):
 
         # Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         # autonomous chooser on the dashboard.
-        # self.container = RobotContainer()
-        self.swerveModule = SwerveModule(6,10, 3, 0.814)
-
-
-    def robotPeriodic(self) -> None:
-        """This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
-        that you want ran during disabled, autonomous, teleoperated and test.
-
-        This runs after the mode specific periodic functions, but before LiveWindow and
-        SmartDashboard integrated updating."""
-
-        # Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-        # commands, running already-scheduled commands, removing finished or interrupted commands,
-        # and running subsystem periodic() methods.  This must be called from the robot's periodic
-        # block in order for anything in the Command-based framework to work.
-        # commands2.CommandScheduler.getInstance().run()
-        print(self.swerveModule.getSwerveMotorPosition())
-
+        self.container = RobotContainer()
 
     def disabledInit(self) -> None:
         """This function is called once each time the robot enters Disabled mode."""
-        # self.container.disablePIDSubsystems()
+        pass
 
     def disabledPeriodic(self) -> None:
         """This function is called periodically when disabled"""
@@ -58,10 +41,10 @@ class MyRobot(commands2.TimedCommandRobot):
 
     def autonomousInit(self) -> None:
         """This autonomous runs the autonomous command selected by your RobotContainer class."""
-        # self.autonomousCommand = self.container.getAutonomousCommand()
+        self.autonomousCommand = self.container.getAutonomousCommand()
 
-        # if self.autonomousCommand:
-        #     self.autonomousCommand.schedule()
+        if self.autonomousCommand:
+            self.autonomousCommand.schedule()
 
     def autonomousPeriodic(self) -> None:
         """This function is called periodically during autonomous"""
@@ -72,16 +55,13 @@ class MyRobot(commands2.TimedCommandRobot):
         # teleop starts running. If you want the autonomous to
         # continue until interrupted by another command, remove
         # this line or comment it out.
-        # if self.autonomousCommand:
-        #     self.autonomousCommand.cancel()
-        pass
+        if self.autonomousCommand:
+            self.autonomousCommand.cancel()
 
     def teleopPeriodic(self) -> None:
         """This function is called periodically during operator control"""
-        # self.swerveModule.setSwervePower(1)
-        self.swerveModule.setSwervePosition(0)
+        pass
 
     def testInit(self) -> None:
         # Cancels all running commands at the start of test mode
-        # commands2.CommandScheduler.getInstance().cancelAll()
-        pass
+        commands2.CommandScheduler.getInstance().cancelAll()

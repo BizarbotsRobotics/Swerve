@@ -1,6 +1,10 @@
 import math
+import ntcore
 from phoenix6 import hardware, controls, configs
 from wpilib import AnalogEncoder
+from constants import SwerveConstants
+from wpimath.kinematics import SwerveModuleState
+from wpimath.geometry import Rotation2d
 
 class SwerveModule:
     def __init__(self, driveMotorId:int,swerveMotorId:int, absoluteEncoderPort:int, encoderOffset:float):
@@ -12,40 +16,60 @@ class SwerveModule:
             absoluteEncoderPort (int): Absolute Encoder port number for swerve.
             encoderOffset (float): Offset for absolute encoder.
         """
+
+        inst = ntcore.NetworkTableInstance.getDefault()
+        inst.startServer()
+        self.sd = inst.getTable("SmartDashboard")
+
+        self.swerveMotorId = swerveMotorId
+
+        # Defining motor objects for swerve module
         self.driveMotor = hardware.TalonFX(driveMotorId)
         self.swerveMotor = hardware.TalonFX(swerveMotorId)
 
-        self.swerveControl = controls.DutyCycleOut(0)
-        self.driveControl = controls.DutyCycleOut(0)
-
-        self.AbsoluteEncoder = AnalogEncoder(absoluteEncoderPort)
-        self.encoderOffset = encoderOffset
-        
-
-         # Start at position 0, use slot 0
-        self.position_voltage = controls.PositionVoltage(0).with_slot(0)
-        # Keep a brake request so we can disable the motor
+        # Define motor control objects 
+        self.voltageControl = controls.DutyCycleOut(0)
+        self.positionVoltage = controls.PositionVoltage(0).with_slot(0)
         self.brake = controls.NeutralOut()
 
+        # Define absolute encoder object based off given port
+        self.AbsoluteEncoder = AnalogEncoder(absoluteEncoderPort)
 
-        cfg = configs.TalonFXConfiguration()
-        cfg.slot0.k_p = 2.4; # An error of 1 rotation results in 2.4 V output
-        cfg.slot0.k_i = 0; # No output for integrated error
-        cfg.slot0.k_d = 0.1; # A velocity of 1 rps results in 0.1 V output
-        # Peak output of 8 V
-        cfg.voltage.peak_forward_voltage = 8
-        cfg.voltage.peak_reverse_voltage = -8
-        # Peak output of 120 A
-        cfg.torque_current.peak_forward_torque_current = 120
-        cfg.torque_current.peak_reverse_torque_current = -120
-
-        self.swerveMotor.configurator.apply(cfg)
-        self.seedSwerveMotorEncoderPosition()
-    
-
+        # Create class variable of encoder offset
+        self.encoderOffset = encoderOffset
         
+        # Define configuration variables for swerve motor
+        cfgSwerve = configs.TalonFXConfiguration()
+        cfgSwerve.slot0.k_p = SwerveConstants.SWERVE_P
+        cfgSwerve.slot0.k_i = SwerveConstants.SWERVE_I
+        cfgSwerve.slot0.k_d = SwerveConstants.SWERVE_D
+        cfgSwerve.voltage.peak_forward_voltage = 8
+        cfgSwerve.voltage.peak_reverse_voltage = -8
+        cfgSwerve.torque_current.peak_forward_torque_current = 120
+        cfgSwerve.torque_current.peak_reverse_torque_current = -120
 
+        # Define configuration variables for drive motor
+        cfgDrive = configs.TalonFXConfiguration()
+        cfgDrive.slot0.k_p = SwerveConstants.DRIVE_P
+        cfgDrive.slot0.k_i = SwerveConstants.DRIVE_I
+        cfgDrive.slot0.k_d = SwerveConstants.DRIVE_D
+        cfgDrive.voltage.peak_forward_voltage = 8
+        cfgDrive.voltage.peak_reverse_voltage = -8
+        cfgDrive.torque_current.peak_forward_torque_current = 120
+        cfgDrive.torque_current.peak_reverse_torque_current = -120
 
+        # Save configuration settings to each motor controller
+        self.swerveMotor.configurator.apply(cfgSwerve)
+        self.driveMotor.configurator.apply(cfgDrive)
+
+        # Syncs swerve motor encoder to absolute encoder
+        self.seedSwerveMotorEncoderPosition()
+
+        self.synchronizeEncoderQueued = True
+
+        self.lastState = self.getState()
+        
+    
     def getAbsoluteEncoderRawValue(self) -> float:
         """Returns the absolute encoder position from 0-1.
 
@@ -55,31 +79,134 @@ class SwerveModule:
         return 1 - self.AbsoluteEncoder.getAbsolutePosition()
     
     def getAbsoluteEncoderPosition(self) -> float:
+        """Returns the absolute encoder position with the offset included from 0-1.
+
+        Returns:
+            float: absolute encoder value.
+        """
         encoderVal = self.getAbsoluteEncoderRawValue() - self.encoderOffset
         if encoderVal < 0:
             return 1 + encoderVal
         return encoderVal
     
     def getAbsoluteEncoderDegrees(self) -> float:
+        """Returns the absolute encoder position in degrees.
+
+        Returns:
+            float: absolute encoder postion in degrees.
+        """
         return self.getAbsoluteEncoderPosition() * 360
 
     def getAbsoluteEncoderRadians(self) -> float:
+        """Returns the absolute encoder position in radians.
+
+        Returns:
+            float: absolute encoder postion in radians.
+        """
         return self.getAbsoluteEncoderPosition() * 2 * math.pi
     
-    def getSwerveMotorPosition(self) -> float:
-        return abs(self.swerveMotor.get_rotor_position().value / 21.42857) % 1
+    def getDriveMotorVelocity(self) -> float:
+        return self.driveMotor.get_rotor_velocity().value
     
-    def seedSwerveMotorEncoderPosition(self):
-        self.swerveMotor.set_position(self.getAbsoluteEncoderPosition() * 21.42857)
+    def getSwerveMotorPosition(self) -> float:
+        """Returns the swerve motor encoder position from 0-1.
 
-    def setSwervePower(self, power) -> None:  
+        Returns:
+            float: swerve motor encoder position.
+        """
+        return abs(self.swerveMotor.get_rotor_position().value / SwerveConstants.SWERVE_GEAR_RATIO) % 1
+    
+    def getSwervePositionDegrees(self) -> float:  
+        return self.getSwerveMotorPosition() * 360
+    
+    def getSwervePositionRadians(self) -> float:  
+        return self.getSwerveMotorPosition() * (2 * math.pi)
+    
+    def getState(self) -> SwerveModuleState:
+        """
+        Returns the current state of the swerve module.
+
+        Returns:
+            SwerveModuleState: The state of the module.
+        """
+        velocity = self.getDriveMotorVelocity()
+        angle = Rotation2d.fromDegrees(self.getSwervePositionDegrees())
+        return SwerveModuleState(velocity, angle)
+
+    
+    def seedSwerveMotorEncoderPosition(self) -> None:
+        """Syncs swerve motor encoder to absolute encoder
+        """
+        self.swerveMotor.set_position(self.getAbsoluteEncoderPosition() * SwerveConstants.SWERVE_GEAR_RATIO)
+
+    def setSwervePower(self, power:float) -> None:  
+        """Sets the swerve motor's power to a value from 0-1 (0%-100%).
+
+        Args:
+            power (float): power value from 0-1.
+        """
         self.swerveMotor.set_control(self.swerveControl.with_output(power))         
 
-    def setDrivePower(self, power) -> None:  
-        self.driveMotor.set_control(self.driveControl.with_output(power))    
+    def setDrivePower(self, power:float) -> None:  
+        """Sets the drive motor's power to a value from 0-1 (0%-100%).
 
-    def setSwervePosition(self, position):
-        self.swerveMotor.set_control(self.position_voltage.with_position(position * 21.42857))
+        Args:
+            power (float): power value from 0-1.
+        """
+        self.driveMotor.set_control(self.voltageControl.with_output(power))    
+
+    def setSwervePosition(self, position:float) -> None:
+        """ Sets the swerve motor's position from 0-1 (0 deg - 360 deg).
+
+        Args:
+            position (float): a position value from 0-1.
+        """
+        self.swerveMotor.set_control(self.positionVoltage.with_position(position * SwerveConstants.SWERVE_GEAR_RATIO))
+
+    def setSwervePositionDegrees(self, position:float) -> None:
+        """Sets the swerve motor's position in degrees from 0-360.
+
+        Args:
+            position (float): position value from 0-360.
+        """
+        self.setSwervePosition((position % 360) / 360)
+
+    def setSwervePositionRadians(self, position:float) -> None:
+        """Sets the swerve motor's position in radians from 0-2pi.
+
+        Args:
+            position (float): position value from 0-2pi.
+        """
+        self.setSwervePosition((position % (2 * math.pi)) / (2 * math.pi))
+
+    def setDesiredState(self, state:SwerveModuleState, openLoop:bool = True) -> None:
+        state = SwerveModuleState.optimize(state, Rotation2d.fromDegrees(self.getSwervePositionDegrees()))
+        #print(state)
+
+        if (state.angle is self.lastState.angle) and self.synchronizeEncoderQueued:
+            self.seedSwerveMotorEncoderPosition()
+            self.synchronizeEncoderQueued = False   
+        else:
+            self.setSwervePositionDegrees(state.angle.degrees())
+
+        if openLoop:
+            percentOutput = state.speed / SwerveConstants.DRIVE_MAX_SPEED
+            self.setDrivePower(percentOutput)
+        else:
+            if state.speed != self.lastState.speed:
+                velocity = state.speed
+                #self.driveMotor.setVelocity(velocity)
+
+        self.lastState = state
+
+    def debug(self):
+        self.sd.putNumber("Absolute Encoder "+ str(self.swerveMotorId), self.getAbsoluteEncoderRawValue())
+        pass
+
+        
+
+
+
 
                             
 
