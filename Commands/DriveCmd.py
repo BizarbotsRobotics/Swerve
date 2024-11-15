@@ -20,7 +20,7 @@ class DriveCmd(commands2.Command):
         pass
 
     def execute(self):
-        self.swerve.driveNormal(-self.x(), -self.y(), -self.rot())
+        self.swerve.driveNormal(-self.x(), self.y(), self.rot())
         #self.swerve.driveFO(self.x(),self.y(),self.rot())
 
     def end(self, interrupted: bool):

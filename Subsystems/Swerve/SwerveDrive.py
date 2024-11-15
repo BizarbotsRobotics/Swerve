@@ -38,7 +38,7 @@ class SwerveDrive(Subsystem):
             kinematics.SwerveDrive4Kinematics : Swerve Drive Kinematics Object
         """
         try:
-            m_frontLeftLocation = Translation2d(SwerveConstants.FRONT_LEFT_CORDS['x'], SwerveConstants.BACK_LEFT_CORDS['y'])
+            m_frontLeftLocation = Translation2d(SwerveConstants.FRONT_LEFT_CORDS['x'], SwerveConstants.FRONT_LEFT_CORDS['y'])
             m_frontRightLocation = Translation2d(SwerveConstants.FRONT_RIGHT_CORDS['x'], SwerveConstants.FRONT_RIGHT_CORDS['y'])
             m_backLeftLocation = Translation2d(SwerveConstants.BACK_LEFT_CORDS['x'], SwerveConstants.BACK_LEFT_CORDS['y'])
             m_backRightLocation = Translation2d(SwerveConstants.BACK_RIGHT_CORDS['x'], SwerveConstants.BACK_RIGHT_CORDS['y'])
