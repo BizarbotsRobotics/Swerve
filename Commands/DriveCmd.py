@@ -3,6 +3,7 @@ import commands2.cmd
 import wpilib
 
 from Subsystems.Swerve.SwerveDrive import SwerveDrive
+from constants import SwerveConstants
 
 
 class DriveCmd(commands2.Command):
@@ -20,8 +21,13 @@ class DriveCmd(commands2.Command):
         pass
 
     def execute(self):
-        self.swerve.driveNormal(-self.x(), self.y(), self.rot())
-        #self.swerve.driveFO(self.x(),self.y(),self.rot())
+        def x(): return SwerveConstants.DRIVE_MAX_SPEED * self.x()
+        def y(): return SwerveConstants.DRIVE_MAX_SPEED * self.y()
+        def rot(): return SwerveConstants.DRIVE_MAX_SPEED * self.rot()
+
+
+
+        self.swerve.driveNormal(x(), y(), rot())
 
     def end(self, interrupted: bool):
         pass

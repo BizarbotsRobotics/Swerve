@@ -7,7 +7,7 @@ from wpimath.kinematics import SwerveModuleState
 from wpimath.geometry import Rotation2d
 
 class SwerveModule:
-    def __init__(self, driveMotorId:int,swerveMotorId:int, absoluteEncoderPort:int, encoderOffset:float):
+    def __init__(self, driveMotorId:int,swerveMotorId:int, absoluteEncoderPort:int, encoderOffset:float, swerveInvert:bool=False, driveInvert:bool=False):
         """Constructor for the swervemodule class.
 
         Args:
@@ -47,6 +47,14 @@ class SwerveModule:
         cfgSwerve.voltage.peak_reverse_voltage = -8
         cfgSwerve.torque_current.peak_forward_torque_current = 120
         cfgSwerve.torque_current.peak_reverse_torque_current = -120
+        cfgSwerve.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
+
+
+        if swerveInvert:
+            cfgSwerve.motor_output.inverted = configs.config_groups.InvertedValue.CLOCKWISE_POSITIVE
+        else:
+            cfgSwerve.motor_output.inverted = configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+
 
         # Define configuration variables for drive motor
         cfgDrive = configs.TalonFXConfiguration()
@@ -58,9 +66,17 @@ class SwerveModule:
         cfgDrive.torque_current.peak_forward_torque_current = 120
         cfgDrive.torque_current.peak_reverse_torque_current = -120
 
+        cfgDrive.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
+        
+        if driveInvert:
+            cfgDrive.motor_output.inverted = configs.config_groups.InvertedValue.CLOCKWISE_POSITIVE
+        else:
+            cfgDrive.motor_output.inverted = configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+
+
         # Save configuration settings to each motor controller
-        self.swerveMotor.configurator.apply(cfgSwerve)
-        self.driveMotor.configurator.apply(cfgDrive)
+        print(self.swerveMotor.configurator.apply(cfgSwerve))
+        print(self.driveMotor.configurator.apply(cfgDrive))
 
         # Syncs swerve motor encoder to absolute encoder
         self.seedSwerveMotorEncoderPosition()
@@ -87,7 +103,7 @@ class SwerveModule:
         encoderVal = self.getAbsoluteEncoderRawValue() - self.encoderOffset
         if encoderVal < 0:
             return 1 + encoderVal
-        return encoderVal
+        return 1 - encoderVal
     
     def getAbsoluteEncoderDegrees(self) -> float:
         """Returns the absolute encoder position in degrees.
@@ -182,7 +198,7 @@ class SwerveModule:
     def setDesiredState(self, state:SwerveModuleState, openLoop:bool = True) -> None:
         state = SwerveModuleState.optimize(state, Rotation2d.fromDegrees(self.getSwervePositionDegrees()))
         #print(state)
-
+        #self.seedSwerveMotorEncoderPosition()
         if (state.angle is self.lastState.angle) and self.synchronizeEncoderQueued:
             self.seedSwerveMotorEncoderPosition()
             self.synchronizeEncoderQueued = False   

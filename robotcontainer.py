@@ -29,7 +29,7 @@ class RobotContainer:
         
         self.swerveDrive = SwerveDrive()
         self.driverController = wpilib.XboxController(0)
-        self.swerveDrive.setDefaultCommand(DriveCmd(self.swerveDrive, self.driverController.getLeftY, self.driverController.getRightX, self.driverController.getLeftX))
+        self.swerveDrive.setDefaultCommand(DriveCmd(self.swerveDrive, self.driverController.getLeftY, self.driverController.getLeftX, self.driverController.getRightX))
         
         self.configureButtonBindings()
 
