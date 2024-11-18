@@ -1,6 +1,6 @@
 import math
 import ntcore
-from phoenix6 import hardware, controls, configs
+from phoenix6 import StatusCode, hardware, controls, configs
 from wpilib import AnalogEncoder
 from constants import SwerveConstants
 from wpimath.kinematics import SwerveModuleState
@@ -20,6 +20,9 @@ class SwerveModule:
         inst = ntcore.NetworkTableInstance.getDefault()
         inst.startServer()
         self.sd = inst.getTable("SmartDashboard")
+
+        self.debug = False
+        self.telemetry = False
 
         self.swerveMotorId = swerveMotorId
 
@@ -48,6 +51,7 @@ class SwerveModule:
         cfgSwerve.torque_current.peak_forward_torque_current = 120
         cfgSwerve.torque_current.peak_reverse_torque_current = -120
         cfgSwerve.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
+        cfgSwerve.closed_loop_general.continuous_wrap = True
 
 
         if swerveInvert:
@@ -75,8 +79,8 @@ class SwerveModule:
 
 
         # Save configuration settings to each motor controller
-        print(self.swerveMotor.configurator.apply(cfgSwerve))
-        print(self.driveMotor.configurator.apply(cfgDrive))
+        self.setConfigs(self.swerveMotor, cfgSwerve)
+        self.setConfigs(self.driveMotor, cfgDrive)
 
         # Syncs swerve motor encoder to absolute encoder
         self.seedSwerveMotorEncoderPosition()
@@ -84,6 +88,18 @@ class SwerveModule:
         self.synchronizeEncoderQueued = True
 
         self.lastState = self.getState()
+
+    def setConfigs(self, motor:hardware.TalonFX, config:configs.TalonFXConfiguration) -> None:
+        motorStatus = StatusCode.STATUS_CODE_NOT_INITIALIZED
+        for i in range(5):
+            motorStatus = motor.configurator.apply(config, 0.05)
+
+            if motorStatus.is_ok() and i > 2:
+                break
+
+        if not motorStatus.is_ok() and self.debug:
+            self.sd.putString("Could not configure device. Error: "+ str(motorStatus))
+
         
     
     def getAbsoluteEncoderRawValue(self) -> float:
@@ -216,8 +232,13 @@ class SwerveModule:
         self.lastState = state
 
     def debug(self):
+        self.debug = True
+
         self.sd.putNumber("Absolute Encoder "+ str(self.swerveMotorId), self.getAbsoluteEncoderRawValue())
-        pass
+
+    def telemetry(self) -> None:
+        self.telemetry = True
+
 
         
 

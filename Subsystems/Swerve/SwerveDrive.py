@@ -26,7 +26,7 @@ class SwerveDrive(Subsystem):
             self.backRight = SwerveModule(SwerveConstants.BACK_RIGHT_DRIVE, SwerveConstants.BACK_RIGHT_SWERVE,
                                         SwerveConstants.BACK_RIGHT_ENCODER_PORT, SwerveConstants.BACK_RIGHT_ENCODER_OFFSET, swerveInvert=True)
             self.swerveModules = [self.frontLeft, self.frontRight, self.backLeft, self.backRight]
-            # TODO Replace PROBLE CHILD
+
         except Exception as e:
             raise Exception("Check ports in constants file or check for Incorrect can IDs")
         
