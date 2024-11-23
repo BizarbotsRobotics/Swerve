@@ -25,7 +25,7 @@ class SwerveDrive(Subsystem):
                                         )
             self.backRight = SwerveModule(SwerveConstants.BACK_RIGHT_DRIVE, SwerveConstants.BACK_RIGHT_SWERVE,
                                         SwerveConstants.BACK_RIGHT_ENCODER_PORT, SwerveConstants.BACK_RIGHT_ENCODER_OFFSET, swerveInvert=True)
-            self.swerveModules = [self.frontLeft, self.frontRight, self.backLeft, self.backRight]
+            self.swerveModules = [self.frontLeft, self.frontRight, self.backRight, self.backLeft]
 
         except Exception as e:
             raise Exception("Check ports in constants file or check for Incorrect can IDs")
@@ -46,7 +46,7 @@ class SwerveDrive(Subsystem):
             m_frontRightLocation = Translation2d(SwerveConstants.FRONT_RIGHT_CORDS['x'], SwerveConstants.FRONT_RIGHT_CORDS['y'])
             m_backLeftLocation = Translation2d(SwerveConstants.BACK_LEFT_CORDS['x'], SwerveConstants.BACK_LEFT_CORDS['y'])
             m_backRightLocation = Translation2d(SwerveConstants.BACK_RIGHT_CORDS['x'], SwerveConstants.BACK_RIGHT_CORDS['y'])
-            return SwerveDrive4Kinematics(m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation)
+            return SwerveDrive4Kinematics(m_frontLeftLocation, m_frontRightLocation, m_backRightLocation, m_backLeftLocation)
         except Exception as e:
             raise Exception("Check your constants folder")
         

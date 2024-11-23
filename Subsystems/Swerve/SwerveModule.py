@@ -21,7 +21,7 @@ class SwerveModule:
         inst.startServer()
         self.sd = inst.getTable("SmartDashboard")
 
-        self.debug = False
+        self.debug_state = False
         self.telemetry = False
 
         self.swerveMotorId = swerveMotorId
@@ -51,7 +51,7 @@ class SwerveModule:
         cfgSwerve.torque_current.peak_forward_torque_current = 120
         cfgSwerve.torque_current.peak_reverse_torque_current = -120
         cfgSwerve.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
-        cfgSwerve.closed_loop_general.continuous_wrap = True
+        # cfgSwerve.closed_loop_general.continuous_wrap = True
 
 
         if swerveInvert:
@@ -97,7 +97,7 @@ class SwerveModule:
             if motorStatus.is_ok() and i > 2:
                 break
 
-        if not motorStatus.is_ok() and self.debug:
+        if not motorStatus.is_ok() and self.debug_state:
             self.sd.putString("Could not configure device. Error: "+ str(motorStatus))
 
         
@@ -232,7 +232,7 @@ class SwerveModule:
         self.lastState = state
 
     def debug(self):
-        self.debug = True
+        self.debug_state = True
 
         self.sd.putNumber("Absolute Encoder "+ str(self.swerveMotorId), self.getAbsoluteEncoderRawValue())
 
