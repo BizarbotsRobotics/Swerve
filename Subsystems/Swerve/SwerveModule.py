@@ -51,7 +51,8 @@ class SwerveModule:
         cfgSwerve.torque_current.peak_forward_torque_current = 120
         cfgSwerve.torque_current.peak_reverse_torque_current = -120
         cfgSwerve.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
-        # cfgSwerve.closed_loop_general.continuous_wrap = True
+        cfgSwerve.closed_loop_general.continuous_wrap = True
+        cfgSwerve.feedback.sensor_to_mechanism_ratio = SwerveConstants.SWERVE_GEAR_RATIO
 
 
         if swerveInvert:
@@ -70,7 +71,7 @@ class SwerveModule:
         cfgDrive.torque_current.peak_forward_torque_current = 120
         cfgDrive.torque_current.peak_reverse_torque_current = -120
 
-        cfgDrive.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
+        cfgDrive.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.COAST
         
         if driveInvert:
             cfgDrive.motor_output.inverted = configs.config_groups.InvertedValue.CLOCKWISE_POSITIVE
@@ -108,7 +109,7 @@ class SwerveModule:
         Returns:
             float: Absolute encoder position.
         """
-        return 1 - self.AbsoluteEncoder.getAbsolutePosition()
+        return self.AbsoluteEncoder.getAbsolutePosition()
     
     def getAbsoluteEncoderPosition(self) -> float:
         """Returns the absolute encoder position with the offset included from 0-1.
@@ -119,7 +120,7 @@ class SwerveModule:
         encoderVal = self.getAbsoluteEncoderRawValue() - self.encoderOffset
         if encoderVal < 0:
             return 1 + encoderVal
-        return 1 - encoderVal
+        return encoderVal
     
     def getAbsoluteEncoderDegrees(self) -> float:
         """Returns the absolute encoder position in degrees.
@@ -146,7 +147,7 @@ class SwerveModule:
         Returns:
             float: swerve motor encoder position.
         """
-        return abs(self.swerveMotor.get_rotor_position().value / SwerveConstants.SWERVE_GEAR_RATIO) % 1
+        return self.swerveMotor.get_position().value % 1
     
     def getSwervePositionDegrees(self) -> float:  
         return self.getSwerveMotorPosition() * 360
@@ -169,7 +170,7 @@ class SwerveModule:
     def seedSwerveMotorEncoderPosition(self) -> None:
         """Syncs swerve motor encoder to absolute encoder
         """
-        self.swerveMotor.set_position(self.getAbsoluteEncoderPosition() * SwerveConstants.SWERVE_GEAR_RATIO)
+        self.swerveMotor.set_position(self.getAbsoluteEncoderPosition())
 
     def setSwervePower(self, power:float) -> None:  
         """Sets the swerve motor's power to a value from 0-1 (0%-100%).
@@ -193,7 +194,7 @@ class SwerveModule:
         Args:
             position (float): a position value from 0-1.
         """
-        self.swerveMotor.set_control(self.positionVoltage.with_position(position * SwerveConstants.SWERVE_GEAR_RATIO))
+        self.swerveMotor.set_control(self.positionVoltage.with_position(position))
 
     def setSwervePositionDegrees(self, position:float) -> None:
         """Sets the swerve motor's position in degrees from 0-360.
@@ -214,7 +215,7 @@ class SwerveModule:
     def setDesiredState(self, state:SwerveModuleState, openLoop:bool = True) -> None:
         state = SwerveModuleState.optimize(state, Rotation2d.fromDegrees(self.getSwervePositionDegrees()))
         #print(state)
-        #self.seedSwerveMotorEncoderPosition()
+        self.seedSwerveMotorEncoderPosition()
         if (state.angle is self.lastState.angle) and self.synchronizeEncoderQueued:
             self.seedSwerveMotorEncoderPosition()
             self.synchronizeEncoderQueued = False   
@@ -234,7 +235,8 @@ class SwerveModule:
     def debug(self):
         self.debug_state = True
 
-        self.sd.putNumber("Absolute Encoder "+ str(self.swerveMotorId), self.getAbsoluteEncoderRawValue())
+        self.sd.putNumber("Absolute Motor Position "+ str(self.swerveMotorId), self.getAbsoluteEncoderRawValue())
+        self.sd.putNumber("Motor Position "+ str(self.swerveMotorId), self.getSwerveMotorPosition())
 
     def telemetry(self) -> None:
         self.telemetry = True

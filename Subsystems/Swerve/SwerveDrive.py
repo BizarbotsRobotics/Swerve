@@ -3,10 +3,16 @@ from Subsystems.Swerve.SwerveModule import SwerveModule
 from constants import SwerveConstants
 from wpimath.kinematics import SwerveDrive4Kinematics, ChassisSpeeds
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
-
+from phoenix6 import hardware
+import ntcore
 
 class SwerveDrive(Subsystem):
     def __init__(self):
+        inst = ntcore.NetworkTableInstance.getDefault()
+        inst.startServer()
+        self.sd = inst.getTable("SmartDashboard")
+    
+        self.initializeIMU()
         self.initializeModules()
 
         self.kinematics = self.getSwerveDriveKinematics()
@@ -25,10 +31,12 @@ class SwerveDrive(Subsystem):
                                         )
             self.backRight = SwerveModule(SwerveConstants.BACK_RIGHT_DRIVE, SwerveConstants.BACK_RIGHT_SWERVE,
                                         SwerveConstants.BACK_RIGHT_ENCODER_PORT, SwerveConstants.BACK_RIGHT_ENCODER_OFFSET, swerveInvert=True)
-            self.swerveModules = [self.frontLeft, self.frontRight, self.backRight, self.backLeft]
+            self.swerveModules = [self.frontLeft, self.frontRight, self.backLeft, self.backRight]
 
         except Exception as e:
             raise Exception("Check ports in constants file or check for Incorrect can IDs")
+        
+        
         
 
     def getSwerveDriveKinematics(self) -> SwerveDrive4Kinematics:
@@ -46,7 +54,7 @@ class SwerveDrive(Subsystem):
             m_frontRightLocation = Translation2d(SwerveConstants.FRONT_RIGHT_CORDS['x'], SwerveConstants.FRONT_RIGHT_CORDS['y'])
             m_backLeftLocation = Translation2d(SwerveConstants.BACK_LEFT_CORDS['x'], SwerveConstants.BACK_LEFT_CORDS['y'])
             m_backRightLocation = Translation2d(SwerveConstants.BACK_RIGHT_CORDS['x'], SwerveConstants.BACK_RIGHT_CORDS['y'])
-            return SwerveDrive4Kinematics(m_frontLeftLocation, m_frontRightLocation, m_backRightLocation, m_backLeftLocation)
+            return SwerveDrive4Kinematics(m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation)
         except Exception as e:
             raise Exception("Check your constants folder")
         
@@ -84,5 +92,12 @@ class SwerveDrive(Subsystem):
     def debug(self):
         for module in self.swerveModules:
             module.debug()
+            self.sd.putNumber("IMU: ", self.imu.get_yaw().value)
+
+
+    def initializeIMU(self):
+        self.imu = hardware.Pigeon2(SwerveConstants.PIGEON_PORT)
+        self.imu.set_yaw(0)
+
 
    
