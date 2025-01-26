@@ -3,7 +3,7 @@ import ntcore
 from phoenix6 import StatusCode, hardware, controls, configs
 from wpilib import AnalogEncoder
 from constants import SwerveConstants
-from wpimath.kinematics import SwerveModuleState
+from wpimath.kinematics import SwerveModuleState, SwerveModulePosition
 from wpimath.geometry import Rotation2d
 
 class SwerveModule:
@@ -109,7 +109,7 @@ class SwerveModule:
         Returns:
             float: Absolute encoder position.
         """
-        return self.AbsoluteEncoder.getAbsolutePosition()
+        return self.AbsoluteEncoder.get()
     
     def getAbsoluteEncoderPosition(self) -> float:
         """Returns the absolute encoder position with the offset included from 0-1.
@@ -149,11 +149,22 @@ class SwerveModule:
         """
         return self.swerveMotor.get_position().value % 1
     
+    def getDriveMotorPosition(self) -> float:
+        """Returns the swerve motor encoder position from 0-1.
+
+        Returns:
+            float: swerve motor encoder position.
+        """
+        return self.driveMotor.get_position().value % 1
+    
     def getSwervePositionDegrees(self) -> float:  
         return self.getSwerveMotorPosition() * 360
     
     def getSwervePositionRadians(self) -> float:  
         return self.getSwerveMotorPosition() * (2 * math.pi)
+    
+    def getDrivePositionRadians(self) -> float:  
+        return self.getDriveMotorPosition() * (2 * math.pi)
     
     def getState(self) -> SwerveModuleState:
         """
@@ -165,6 +176,11 @@ class SwerveModule:
         velocity = self.getDriveMotorVelocity()
         angle = Rotation2d.fromDegrees(self.getSwervePositionDegrees())
         return SwerveModuleState(velocity, angle)
+    
+    def getSwerveModulePosition(self):
+        position = self.getDriveMotorPosition()
+        azimuth = self.getSwervePositionRadians()
+        return SwerveModulePosition(position, Rotation2d(azimuth))
 
     
     def seedSwerveMotorEncoderPosition(self) -> None:

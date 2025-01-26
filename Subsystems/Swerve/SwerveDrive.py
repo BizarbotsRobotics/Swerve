@@ -1,3 +1,4 @@
+from math import pi
 from commands2 import Subsystem
 from Subsystems.Swerve.SwerveModule import SwerveModule
 from constants import SwerveConstants
@@ -5,6 +6,13 @@ from wpimath.kinematics import SwerveDrive4Kinematics, ChassisSpeeds
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from phoenix6 import hardware
 import ntcore
+from wpimath import estimator
+from pathplannerlib import config, controller
+from pathplannerlib.auto import AutoBuilder
+from pathplannerlib.auto import AutoBuilder
+from pathplannerlib.controller import PPHolonomicDriveController
+from pathplannerlib.config import RobotConfig, PIDConstants
+from wpilib import DriverStation
 
 class SwerveDrive(Subsystem):
     def __init__(self):
@@ -17,8 +25,50 @@ class SwerveDrive(Subsystem):
 
         self.kinematics = self.getSwerveDriveKinematics()
 
+        self.swervePoseEstimator = estimator.SwerveDrive4PoseEstimator(self.kinematics,
+            self.getYaw(),
+            self.getModulePositions(),
+            Pose2d(),
+            (0.4,0,0.0),
+            (0.4, 0.0, 0.1)
+            #TODO Optimize these standard deviations later
+           )
+        
+        # AutoBuilder.configureHolonomic(
+        #     self.getPose, # Robot pose supplier
+        #     self.resetOdometry, # Method to reset odometry (will be called if your auto has a starting pose)
+        #     self.getRobotVelocity, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        #     self.setChassisSpeeds, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+        #     config.HolonomicPathFollowerConfig( # HolonomicPathFollowerConfig, this should likely live in your Constants class
+        #         controller.PIDConstants(.1, 0.0, 0.05), # Translation PID constants
+        #         controller.PIDConstants(.7, 0.0, .1), # Rotation PID constants
+        #         4.5, # Max module speed, in m/s
+        #         0.4, # Drive base radius in meters. Distance from robot center to furthest module.
+        #         config.ReplanningConfig() # Default path replanning config. See the API for the options here
+        #     ),
+        #     False, self
+        # )
+
+        config = RobotConfig.fromGUISettings()
+
+        # Configure the AutoBuilder last
+        AutoBuilder.configureHolonomic(
+            self.getPose, # Robot pose supplier
+            self.resetOdometry, # Method to reset odometry (will be called if your auto has a starting pose)
+            self.getRobotVelocity, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            self.setChasisSpeeds, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also outputs individual module feedforwards
+            PPHolonomicDriveController( # PPHolonomicController is the built in path following controller for holonomic drive trains
+                PIDConstants(5.0, 0.0, 0.0), # Translation PID constants
+                PIDConstants(5.0, 0.0, 0.0) # Rotation PID constants
+            ),
+            config, # The robot configuration
+            False, # Supplier to control path flipping based on alliance color
+            self # Reference to this subsystem to set requirements
+        )
+
     def periodic(self):
         self.debug()
+        self.updateOdometry()
 
     def initializeModules(self):
         try:
@@ -90,6 +140,7 @@ class SwerveDrive(Subsystem):
         self.drive(velocity, True, None)
 
     def debug(self):
+        print(self.getPose())
         for module in self.swerveModules:
             module.debug()
             self.sd.putNumber("IMU: ", self.imu.get_yaw().value)
@@ -98,6 +149,52 @@ class SwerveDrive(Subsystem):
     def initializeIMU(self):
         self.imu = hardware.Pigeon2(SwerveConstants.PIGEON_PORT)
         self.imu.set_yaw(0)
+
+    def getYaw(self):
+        if self.imu != None:
+            return self.degreesToRad(Rotation2d(self.imu.get_yaw().value_as_double))
+        else:
+            return Rotation2d()
+        
+    def degreesToRad(self, val):
+        return (val / 360) * (2 * pi)
+    
+    
+    def getModulePositions(self, invertOdometry=False) -> tuple:
+        """
+        Returns the module position as a tuple.
+
+        Args:
+            invertOdometry (bool, optional): Inverts the odometry. Defaults to False.
+
+        Returns:
+            tuple: Position of the module.
+        """
+        counter = 0
+        positions = []
+        for swerve in self.swerveModules:
+            positions.insert(counter, swerve.getSwerveModulePosition())
+            if invertOdometry:
+                positions[counter].distance *= -1
+            counter+=1
+        return tuple(positions)
+    
+    def getPose(self):
+        poseEstimation = self.swervePoseEstimator.getEstimatedPosition()
+        return poseEstimation
+
+    def resetOdometry(self, pose):
+        self.swervePoseEstimator.resetPosition(self.getYaw(), self.getModulePositions(), pose)
+        self.kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, pose.rotation()))
+
+    def updateOdometry(self):
+        try:
+            self.swervePoseEstimator.update(self.getYaw(), self.getModulePositions())
+            self.currentHeading = self.swervePoseEstimator.getEstimatedPosition().rotation().degrees().real            
+        except Exception as e:
+            raise e
+        return None
+
 
 
    
