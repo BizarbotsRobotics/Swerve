@@ -25,14 +25,14 @@ class SwerveDrive(Subsystem):
 
         self.kinematics = self.getSwerveDriveKinematics()
 
-        self.swervePoseEstimator = estimator.SwerveDrive4PoseEstimator(self.kinematics,
-            self.getYaw(),
-            self.getModulePositions(),
-            Pose2d(),
-            (0.4,0,0.0),
-            (0.4, 0.0, 0.1)
-            #TODO Optimize these standard deviations later
-           )
+        # self.swervePoseEstimator = estimator.SwerveDrive4PoseEstimator(self.kinematics,
+        #     self.getYaw(),
+        #     self.getModulePositions(),
+        #     Pose2d(),
+        #     (0.4,0,0.0),
+        #     (0.4, 0.0, 0.1)
+        #     #TODO Optimize these standard deviations later
+        #    )
         
         # AutoBuilder.configureHolonomic(
         #     self.getPose, # Robot pose supplier
@@ -51,24 +51,24 @@ class SwerveDrive(Subsystem):
 
         config = RobotConfig.fromGUISettings()
 
-        # Configure the AutoBuilder last
-        AutoBuilder.configureHolonomic(
-            self.getPose, # Robot pose supplier
-            self.resetOdometry, # Method to reset odometry (will be called if your auto has a starting pose)
-            self.getRobotVelocity, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            self.setChasisSpeeds, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also outputs individual module feedforwards
-            PPHolonomicDriveController( # PPHolonomicController is the built in path following controller for holonomic drive trains
-                PIDConstants(5.0, 0.0, 0.0), # Translation PID constants
-                PIDConstants(5.0, 0.0, 0.0) # Rotation PID constants
-            ),
-            config, # The robot configuration
-            False, # Supplier to control path flipping based on alliance color
-            self # Reference to this subsystem to set requirements
-        )
+        # # Configure the AutoBuilder last
+        # AutoBuilder.configureHolonomic(
+        #     self.getPose, # Robot pose supplier
+        #     self.resetOdometry, # Method to reset odometry (will be called if your auto has a starting pose)
+        #     self.getRobotVelocity, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        #     self.setChasisSpeeds, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also outputs individual module feedforwards
+        #     PPHolonomicDriveController( # PPHolonomicController is the built in path following controller for holonomic drive trains
+        #         PIDConstants(5.0, 0.0, 0.0), # Translation PID constants
+        #         PIDConstants(5.0, 0.0, 0.0) # Rotation PID constants
+        #     ),
+        #     config, # The robot configuration
+        #     False, # Supplier to control path flipping based on alliance color
+        #     self # Reference to this subsystem to set requirements
+        # )
 
     def periodic(self):
         self.debug()
-        self.updateOdometry()
+        # self.updateOdometry()
 
     def initializeModules(self):
         try:
@@ -140,7 +140,7 @@ class SwerveDrive(Subsystem):
         self.drive(velocity, True, None)
 
     def debug(self):
-        print(self.getPose())
+        # print(self.getPose())
         for module in self.swerveModules:
             module.debug()
             self.sd.putNumber("IMU: ", self.imu.get_yaw().value)
