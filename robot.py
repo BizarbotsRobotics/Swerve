@@ -9,6 +9,8 @@
 import wpilib
 import commands2
 import typing
+from libgrapplefrc import can_bridge_tcp
+
 
 from robotcontainer import RobotContainer
 
@@ -27,9 +29,13 @@ class MyRobot(commands2.TimedCommandRobot):
         initialization code.
         """
 
+        can_bridge_tcp()
+
         # Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         # autonomous chooser on the dashboard.
         self.container = RobotContainer()
+
+
 
     def disabledInit(self) -> None:
         """This function is called once each time the robot enters Disabled mode."""

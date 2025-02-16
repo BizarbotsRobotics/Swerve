@@ -25,8 +25,6 @@ class DriveCmd(commands2.Command):
         def y(): return SwerveConstants.DRIVE_MAX_SPEED * self.y()
         def rot(): return SwerveConstants.DRIVE_MAX_SPEED * self.rot()
 
-
-
         self.swerve.driveNormal(x(), y(), rot())
 
     def end(self, interrupted: bool):

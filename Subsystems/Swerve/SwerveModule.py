@@ -71,7 +71,7 @@ class SwerveModule:
         cfgDrive.torque_current.peak_forward_torque_current = 120
         cfgDrive.torque_current.peak_reverse_torque_current = -120
 
-        cfgDrive.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.COAST
+        cfgDrive.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
         
         if driveInvert:
             cfgDrive.motor_output.inverted = configs.config_groups.InvertedValue.CLOCKWISE_POSITIVE
@@ -229,8 +229,7 @@ class SwerveModule:
         self.setSwervePosition((position % (2 * math.pi)) / (2 * math.pi))
 
     def setDesiredState(self, state:SwerveModuleState, openLoop:bool = True) -> None:
-        state = SwerveModuleState.optimize(state, Rotation2d.fromDegrees(self.getSwervePositionDegrees()))
-        #print(state)
+        SwerveModuleState.optimize(state, Rotation2d.fromDegrees(self.getSwervePositionDegrees()))
         self.seedSwerveMotorEncoderPosition()
         if (state.angle is self.lastState.angle) and self.synchronizeEncoderQueued:
             self.seedSwerveMotorEncoderPosition()

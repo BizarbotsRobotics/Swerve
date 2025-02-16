@@ -10,9 +10,21 @@ import commands2.button
 import commands2.cmd
 import wpilib
 
+from Commands.AlgaePivotCmd import AlgaePivotCmd
+from Commands.CoralPivotCmd import CoralPivotCmd
+from Commands.ManualAlgaeIntakeCmd import ManualAlgaeIntakeCmd
+from Commands.ManualAlgaePivotCmd import ManualAlgaePivotCmd
+from Commands.ManualCoralIntakeCmd import ManualCoralIntakeCmd
+from Commands.ClimberCmd import ClimberCmd
 from Commands.DriveCmd import DriveCmd
+from Commands.ElevatorCmd import ElevatorCmd
+from Subsystems.Cimber.Climber import Climber
+from Subsystems.Coralina.Coralina import Coralina
+from Subsystems.Elevator.Elevator import Elevator
+from Subsystems.Gorgina.Gorgina import Gorgina
 from Subsystems.Swerve.SwerveDrive import SwerveDrive
 import constants
+
 
 
 
@@ -26,11 +38,27 @@ class RobotContainer:
 
 
     def __init__(self) -> None:
-        
         self.swerveDrive = SwerveDrive()
+        self.climber = Climber()
+        self.elevator = Elevator()
+        self.coralina = Coralina()
+        self.gorgina = Gorgina()
+
         self.driverController = wpilib.XboxController(0)
+        self.operatorController = wpilib.XboxController(1)
+
         self.swerveDrive.setDefaultCommand(DriveCmd(self.swerveDrive, self.driverController.getLeftY, self.driverController.getLeftX, self.driverController.getRightX))
+
+        self.climber.setDefaultCommand(ClimberCmd(self.climber, self.operatorController.getRightTriggerAxis, self.operatorController.getLeftTriggerAxis))
+
+        self.elevator.setDefaultCommand(ElevatorCmd(self.elevator, self.operatorController.getLeftY))
+
+        # self.coralina.setDefaultCommand(ManualCoralIntakeCmd(self.coralina, self.operatorController.getLeftY))
+        self.coralina.setDefaultCommand(CoralPivotCmd(self.coralina, self.operatorController.getRightX))
         
+        self.gorgina.setDefaultCommand(ManualAlgaePivotCmd(self.gorgina, self.operatorController.getRightY))
+        
+
         self.configureButtonBindings()
 
         
@@ -42,7 +70,32 @@ class RobotContainer:
         and then passing it to a JoystickButton.
         """
 
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).toggleOnTrue(
+        #     commands2.RunCommand(
+        #         lambda: self.elevator.setElevatorPosition(15),
+        #         self.elevator
+        #     )
+        # )
+
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kB).whileTrue(
+            ManualAlgaeIntakeCmd(self.gorgina,  returnOne)
+        )
+
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kX).whileTrue(
+            ManualAlgaeIntakeCmd(self.gorgina, returnOneN)
+        )
         
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).whileTrue(
+            ManualCoralIntakeCmd(self.coralina,  returnOne)
+        )
+
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kY).whileTrue(
+            ManualCoralIntakeCmd(self.coralina, returnOneN)
+        )
+
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kLeftBumper).whileTrue(
+        #     AlgaePivotCmd(self.gorgina)
+        # )
 
     def disablePIDSubsystems(self) -> None:
         """Disables all ProfiledPIDSubsystem and PIDSubsystem instances.
@@ -55,3 +108,9 @@ class RobotContainer:
         :returns: the command to run in autonomous
         """
         return commands2.cmd.none()
+
+def returnOne():
+    return 1
+
+def returnOneN():
+    return -1

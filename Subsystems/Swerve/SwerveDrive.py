@@ -132,7 +132,6 @@ class SwerveDrive(Subsystem):
 
     def drive(self, velocity, isOpenLoop, centerOfRotationMeters):
         swerveModuleStates = self.kinematics.toSwerveModuleStates(velocity)
-
         self.setRawModuleStates(swerveModuleStates, isOpenLoop)
 
     def driveNormal(self, dx, dy, theta):
