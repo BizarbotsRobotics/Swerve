@@ -28,24 +28,35 @@ class Elevator(commands2.Subsystem):
         cfgElevatorOne.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
         cfgElevatorTwo.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
 
+        self.elevatorMotorTwo.set_control(controls.Follower(ElevatorConstants.ELEVATOR_MOTOR_ONE, False))
+
+        cfgElevatorOne = configs.TalonFXConfiguration()
+        cfgElevatorOne.slot0.k_p = ElevatorConstants.ELEVATOR_P
+        cfgElevatorOne.slot0.k_i = ElevatorConstants.ELEVATOR_I
+        cfgElevatorOne.slot0.k_d = ElevatorConstants.ELEVATOR_D
+        cfgElevatorOne.voltage.peak_forward_voltage = 8
+        cfgElevatorOne.voltage.peak_reverse_voltage = -8
+        cfgElevatorOne.torque_current.peak_forward_torque_current = 120
+        cfgElevatorOne.torque_current.peak_reverse_torque_current = -120
+
+        cfgElevatorOne.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
+
         self.setConfigs(self.elevatorMotorOne, cfgElevatorOne)
         self.setConfigs(self.elevatorMotorTwo, cfgElevatorTwo)
 
-        self.elevatorMotorTwo.set_control(controls.Follower(ElevatorConstants.ELEVATOR_MOTOR_ONE, False))
 
-        self.voltageControl = controls.DutyCycleOut(0)
+        # self.voltageControl = controls.DutyCycleOut(0)
 
-        self.absoluteEncoder = wpilib.Encoder(0,1,True)
+        # self.positionVoltage = controls.PositionVoltage(0).with_slot(0)
 
-        self.positionVoltage = controls.PositionVoltage(0).with_slot(0)
-        self.trap = TrapezoidProfile.Constraints(500, 500)
-        self.pid = ProfiledPIDController(ElevatorConstants.ELEVATOR_P, ElevatorConstants.ELEVATOR_I, ElevatorConstants.ELEVATOR_D, self.trap)
+        # self.elevatorMotorOne.setDistancePerPulse(.0059)
 
-        self.absoluteEncoder.setDistancePerPulse(.0059)
+        # self.pid.reset(0)
 
-        self.pid.reset(0)
+        # self.pid.setTolerance(1,1)
 
-        self.pid.setTolerance(1,1)
+        
+        # self.synchronizeEncoderQueued = True
         
     def periodic(self):
         self.telemetry()
@@ -83,8 +94,16 @@ class Elevator(commands2.Subsystem):
         Args:
             position (float): a position value from 0-1.
         """
-        self.pid.setGoal(position)
-        self.elevatorMotorOne.set_control(self.voltageControl.with_output(-self.pid.calculate(self.absoluteEncoder.getDistance())))
+        self.elevatorMotorOne.set_position(position)
 
     def clamp(self,v, minval, maxval):
         return max(min(v, maxval), minval)
+    
+    def getElevatorMotorPosition(self) -> float:
+        """Returns the swerve motor encoder position from 0-1.
+
+        Returns:
+            float: swerve motor encoder position.
+        """
+        return self.elevatorMotorOne.get_position().value % 1
+    

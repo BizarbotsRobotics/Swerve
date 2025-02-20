@@ -17,7 +17,8 @@ from Commands.ManualAlgaePivotCmd import ManualAlgaePivotCmd
 from Commands.ManualCoralIntakeCmd import ManualCoralIntakeCmd
 from Commands.ClimberCmd import ClimberCmd
 from Commands.DriveCmd import DriveCmd
-from Commands.ElevatorCmd import ElevatorCmd
+from Commands.ManualElevatorCmd import ManualElevatorCmd
+from Commands.SetElevatorPositionCmd import SetElevatorPositionCmd
 from Subsystems.Cimber.Climber import Climber
 from Subsystems.Coralina.Coralina import Coralina
 from Subsystems.Elevator.Elevator import Elevator
@@ -51,7 +52,7 @@ class RobotContainer:
 
         self.climber.setDefaultCommand(ClimberCmd(self.climber, self.operatorController.getRightTriggerAxis, self.operatorController.getLeftTriggerAxis))
 
-        self.elevator.setDefaultCommand(ElevatorCmd(self.elevator, self.operatorController.getLeftY))
+        self.elevator.setDefaultCommand(ManualElevatorCmd(self.elevator, self.operatorController.getLeftY))
 
         # self.coralina.setDefaultCommand(ManualCoralIntakeCmd(self.coralina, self.operatorController.getLeftY))
         self.coralina.setDefaultCommand(CoralPivotCmd(self.coralina, self.operatorController.getRightX))
@@ -70,12 +71,21 @@ class RobotContainer:
         and then passing it to a JoystickButton.
         """
 
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).toggleOnTrue(
-        #     commands2.RunCommand(
-        #         lambda: self.elevator.setElevatorPosition(15),
-        #         self.elevator
-        #     )
-        # )
+        commands2.button.povbutton.POVButton(self.operatorController, wpilib.XboxController.POVDown).onTrue(
+            SetElevatorPositionCmd(self.elevator, constants.ElevatorConstants.L_ONE_ELEVATOR_HEIGHT)
+        )
+
+        commands2.button.povbutton.POVButton(self.operatorController, wpilib.XboxController.POVLeft).onTrue(
+            SetElevatorPositionCmd(self.elevator, constants.ElevatorConstants.L_TWO_ELEVATOR_HEIGHT)
+        )
+    
+        commands2.button.povbutton.POVButton(self.operatorController, wpilib.XboxController.POVUp).onTrue(
+            SetElevatorPositionCmd(self.elevator, constants.ElevatorConstants.L_THREE_ELEVATOR_HEIGHT)
+        )
+
+        commands2.button.povbutton.POVButton(self.operatorController, wpilib.XboxController.POVRight).onTrue(
+            SetElevatorPositionCmd(self.elevator, constants.ElevatorConstants.L_FOUR_ELEVATOR_HEIGHT)
+        )
 
         commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kB).whileTrue(
             ManualAlgaeIntakeCmd(self.gorgina,  returnOne)

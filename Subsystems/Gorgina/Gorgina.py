@@ -21,12 +21,15 @@ class Gorgina(commands2.Subsystem):
 
         
         config = rev.SparkBaseConfig()
-        config.closedLoop.P(2)
-        config.closedLoop.I(0)
-        config.closedLoop.D(0)
+        config.closedLoop.P(IntakeConstants.ALGAE_PIVOT_P)
+        config.closedLoop.I(IntakeConstants.ALGAE_PIVOT_I)
+        config.closedLoop.D(IntakeConstants.ALGAE_PIVOT_D)
         config.closedLoop.setFeedbackSensor(rev.ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder)
         config.setIdleMode(rev.SparkBaseConfig.IdleMode.kBrake)
+
+        
         # config.encoder.positionConversionFactor = .2
+
 
         self.pivotPID = self.algaePivotMotor.getClosedLoopController()
 
@@ -58,6 +61,9 @@ class Gorgina(commands2.Subsystem):
 
     def setPivotPosition(self, position):
         self.pivotPID.setReference(position, rev.SparkLowLevel.ControlType.kPosition)
+
+    def setCoralPivotPosition(self, position):
+        self.algaePivotMotor.set_position(position)
 
 
     # def getIntakeRPM(self):

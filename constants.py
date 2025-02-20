@@ -53,8 +53,26 @@ class IntakeConstants:
     ALGAE_INTAKE_MOTOR = 3
     ALGAE_PIVOT_MOTOR = 25
 
+    ALGAE_PIVOT_P = 0
+    ALGAE_PIVOT_I = 0
+    ALGAE_PIVOT_D = 0
+
+    L_ONE_ALGAE_HEIGHT = 0
+    L_TWO_ALGAE_HEIGHT = 0
+    L_THREE_ALGAE_HEIGHT = 0
+    L_FOUR_ALGAE_HEIGHT = 0
+
     CORAL_INTAKE_MOTOR = 15
     CORAL_PIVOT_MOTOR = 14
+
+    CORAL_PIVOT_P = 0
+    CORAL_PIVOT_I = 0
+    CORAL_PIVOT_D = 0
+
+    L_ONE_CORAL_HEIGHT = 0
+    L_TWO_CORAL_HEIGHT = 0
+    L_THREE_CORAL_HEIGHT = 0
+    L_FOUR_CORAL_HEIGHT = 0
 
 class ElevatorConstants:
     ELEVATOR_MOTOR_ONE = 1
@@ -63,6 +81,14 @@ class ElevatorConstants:
     ELEVATOR_P =.15
     ELEVATOR_I = 0
     ELEVATOR_D = 0
+
+    L_ONE_ELEVATOR_HEIGHT = 0
+    L_TWO_ELEVATOR_HEIGHT = 0
+    L_THREE_ELEVATOR_HEIGHT = 0
+    L_FOUR_ELEVATOR_HEIGHT = 0
+        
+    bargeElevatorHeight = 0
+    processorElevatorHeight = 0
 
 
 

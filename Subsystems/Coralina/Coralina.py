@@ -15,12 +15,29 @@ class Coralina(commands2.Subsystem):
         self.inst = ntcore.NetworkTableInstance.getDefault()
         self.inst.startServer()
         self.sd = self.inst.getTable("SmartDashboard")
+        
         # self.coralinaProxSensor = lasercan.laserCAN(1)
+        self.pivotAbsoluteEncoder = wpilib.DutyCycleEncoder(8)
 
         self.coralIntakeMotor = rev.SparkMax(IntakeConstants.CORAL_INTAKE_MOTOR, rev.SparkLowLevel.MotorType.kBrushless)
         self.coralPivotMotor = rev.SparkMax(IntakeConstants.CORAL_PIVOT_MOTOR, rev.SparkLowLevel.MotorType.kBrushless)
 
-    
+        config = rev.SparkBaseConfig()
+        config.closedLoop.P(IntakeConstants.CORAL_PIVOT_P)
+        config.closedLoop.I(IntakeConstants.CORAL_PIVOT_I)
+        config.closedLoop.D(IntakeConstants.CORAL_PIVOT_D)
+        config.closedLoop.setFeedbackSensor(rev.ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder)
+        config.setIdleMode(rev.SparkBaseConfig.IdleMode.kBrake)
+
+        
+        # config.encoder.positionConversionFactor = .2
+
+
+        self.pivotPID = self.coralPivotMotor.getClosedLoopController()
+
+
+        
+        self.coralPivotMotor.configure(config, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)
 
 
 
@@ -45,6 +62,10 @@ class Coralina(commands2.Subsystem):
 
     def setPivotPower(self, power):
         self.coralPivotMotor.set(power)
+    
+    def setCoralPivotPosition(self, position):
+        self.coralPivotMotor.set_position(position)
+
 
     # def setCoralinaProxVal(self):
     #     self.coralinaProx = self.coralinaProxSensor.getRange()
