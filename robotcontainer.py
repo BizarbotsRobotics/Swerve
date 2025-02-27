@@ -11,6 +11,8 @@ import commands2.cmd
 import wpilib
 
 from Commands.AlgaePivotCmd import AlgaePivotCmd
+from Commands.CoralIOuttakeCmd import CoralOuttakeCmd
+from Commands.CoralIntakeCmd import CoralIntakeCmd
 from Commands.CoralPivotCmd import CoralPivotCmd
 from Commands.ManualAlgaeIntakeCmd import ManualAlgaeIntakeCmd
 from Commands.ManualAlgaePivotCmd import ManualAlgaePivotCmd
@@ -18,12 +20,15 @@ from Commands.ManualCoralIntakeCmd import ManualCoralIntakeCmd
 from Commands.ClimberCmd import ClimberCmd
 from Commands.DriveCmd import DriveCmd
 from Commands.ManualElevatorCmd import ManualElevatorCmd
+from Commands.SetAlgaePivotCmd import SetAlgaePivotCmd
+from Commands.SetCoralPivotCmd import SetCoralPivotCmd
 from Commands.SetElevatorPositionCmd import SetElevatorPositionCmd
 from Subsystems.Cimber.Climber import Climber
 from Subsystems.Coralina.Coralina import Coralina
 from Subsystems.Elevator.Elevator import Elevator
 from Subsystems.Gorgina.Gorgina import Gorgina
 from Subsystems.Swerve.SwerveDrive import SwerveDrive
+from Subsystems.Vision.Vision import Vision
 import constants
 
 
@@ -39,8 +44,9 @@ class RobotContainer:
 
 
     def __init__(self) -> None:
-        self.swerveDrive = SwerveDrive()
-        self.climber = Climber()
+        # self.vision = Vision()
+        # self.swerveDrive = SwerveDrive(self.vision)
+        # self.climber = Climber()
         self.elevator = Elevator()
         self.coralina = Coralina()
         self.gorgina = Gorgina()
@@ -48,15 +54,15 @@ class RobotContainer:
         self.driverController = wpilib.XboxController(0)
         self.operatorController = wpilib.XboxController(1)
 
-        self.swerveDrive.setDefaultCommand(DriveCmd(self.swerveDrive, self.driverController.getLeftY, self.driverController.getLeftX, self.driverController.getRightX))
+        # self.swerveDrive.setDefaultCommand(DriveCmd(self.swerveDrive, self.driverController.getLeftY, self.driverController.getLeftX, self.driverController.getRightX))
 
-        self.climber.setDefaultCommand(ClimberCmd(self.climber, self.operatorController.getRightTriggerAxis, self.operatorController.getLeftTriggerAxis))
+        # self.climber.setDefaultCommand(ClimberCmd(self.climber, self.operatorController.getRightTriggerAxis, self.operatorController.getLeftTriggerAxis))
 
         self.elevator.setDefaultCommand(ManualElevatorCmd(self.elevator, self.operatorController.getLeftY))
 
         # self.coralina.setDefaultCommand(ManualCoralIntakeCmd(self.coralina, self.operatorController.getLeftY))
         self.coralina.setDefaultCommand(CoralPivotCmd(self.coralina, self.operatorController.getRightX))
-        
+    
         self.gorgina.setDefaultCommand(ManualAlgaePivotCmd(self.gorgina, self.operatorController.getRightY))
         
 
@@ -71,41 +77,38 @@ class RobotContainer:
         and then passing it to a JoystickButton.
         """
 
-        commands2.button.povbutton.POVButton(self.operatorController, wpilib.XboxController.POVDown).onTrue(
-            SetElevatorPositionCmd(self.elevator, constants.ElevatorConstants.L_ONE_ELEVATOR_HEIGHT)
+
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kLeftBumper).whileTrue(
+            ManualAlgaeIntakeCmd(self.gorgina, -1)
         )
 
-        commands2.button.povbutton.POVButton(self.operatorController, wpilib.XboxController.POVLeft).onTrue(
-            SetElevatorPositionCmd(self.elevator, constants.ElevatorConstants.L_TWO_ELEVATOR_HEIGHT)
-        )
-    
-        commands2.button.povbutton.POVButton(self.operatorController, wpilib.XboxController.POVUp).onTrue(
-            SetElevatorPositionCmd(self.elevator, constants.ElevatorConstants.L_THREE_ELEVATOR_HEIGHT)
-        )
-
-        commands2.button.povbutton.POVButton(self.operatorController, wpilib.XboxController.POVRight).onTrue(
-            SetElevatorPositionCmd(self.elevator, constants.ElevatorConstants.L_FOUR_ELEVATOR_HEIGHT)
-        )
-
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kB).whileTrue(
-            ManualAlgaeIntakeCmd(self.gorgina,  returnOne)
-        )
-
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kX).whileTrue(
-            ManualAlgaeIntakeCmd(self.gorgina, returnOneN)
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kRightBumper).whileTrue(
+            ManualAlgaeIntakeCmd(self.gorgina, .5)
         )
         
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).whileTrue(
-            ManualCoralIntakeCmd(self.coralina,  returnOne)
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kX).onTrue(
+            SetElevatorPositionCmd(self.elevator, -12)
+        )
+
+        # commands2.button.povbutton.POVButton(self.operatorController, wpilib.XboxController.POVDown).onTrue(
+        #     SetAlgaePivotCmd(self.gorgina, constants.IntakeConstants.REEF_ALGAE_ANGLE)
+        # )
+
+        # commands2.button.POVButton(self.operatorController, wpilib.XboxController.POVDown).onTrue(
+        #     SetCoralPivotCmd(self.coralina, constants.IntakeConstants.MID_CORAL_ANGLE)
+        # )
+        
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kX).onTrue(
+        #     CoralIntakeCmd(self.coralina)
+        # )
+
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).onTrue(
+            SetAlgaePivotCmd(self.gorgina, 45)
         )
 
         commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kY).whileTrue(
-            ManualCoralIntakeCmd(self.coralina, returnOneN)
+            CoralOuttakeCmd(self.coralina)
         )
-
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kLeftBumper).whileTrue(
-        #     AlgaePivotCmd(self.gorgina)
-        # )
 
     def disablePIDSubsystems(self) -> None:
         """Disables all ProfiledPIDSubsystem and PIDSubsystem instances.

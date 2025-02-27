@@ -18,27 +18,34 @@ class Gorgina(commands2.Subsystem):
 
         self.algaeIntakeMotor = rev.SparkMax(IntakeConstants.ALGAE_INTAKE_MOTOR, rev.SparkLowLevel.MotorType.kBrushless)
         self.algaePivotMotor = rev.SparkMax(IntakeConstants.ALGAE_PIVOT_MOTOR, rev.SparkLowLevel.MotorType.kBrushless)
-
+        self.pivotAbsoluteEncoder = self.algaePivotMotor.getAbsoluteEncoder()
         
         config = rev.SparkBaseConfig()
         config.closedLoop.P(IntakeConstants.ALGAE_PIVOT_P)
         config.closedLoop.I(IntakeConstants.ALGAE_PIVOT_I)
         config.closedLoop.D(IntakeConstants.ALGAE_PIVOT_D)
         config.closedLoop.setFeedbackSensor(rev.ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder)
+        config.inverted(True)
         config.setIdleMode(rev.SparkBaseConfig.IdleMode.kBrake)
+        config.absoluteEncoder.zeroOffset(.58)
+        config.absoluteEncoder.positionConversionFactor(360)
+        config.absoluteEncoder.inverted(True)
+
+
 
         
         # config.encoder.positionConversionFactor = .2
 
 
         self.pivotPID = self.algaePivotMotor.getClosedLoopController()
-
+        
 
         
         self.algaePivotMotor.configure(config, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)
         
         
     def periodic(self):
+        self.telemetry()
         pass
 
     def telemetry(self):
@@ -47,6 +54,7 @@ class Gorgina(commands2.Subsystem):
         """
         # self.sd.putBoolean("Algae Stored", self.getNoteStored())
         # self.sd.putNumber("ALgae Prox", self.prox)
+        self.sd.putNumber("Alage pivot ", self.getPivotPositionDegrees())
         pass
 
     
@@ -59,19 +67,22 @@ class Gorgina(commands2.Subsystem):
         else:
             self.algaePivotMotor.set(power)
 
-    def setPivotPosition(self, position):
-        self.pivotPID.setReference(position, rev.SparkLowLevel.ControlType.kPosition)
+    def setAlgaePivotPosition(self, apa):
+        self.pivotPID.setReference(apa, rev.SparkLowLevel.ControlType.kPosition)
 
-    def setCoralPivotPosition(self, position):
-        self.algaePivotMotor.set_position(position)
+    def getAlgaePivotPosition(self):
+        return self.algaePivotMotor.getAbsoluteEncoder().getPosition()
+    
+    def getPivotPositionDegrees(self):
+        return self.pivotAbsoluteEncoder.getPosition()
 
 
     # def getIntakeRPM(self):
     #     return self.intakeMotor.getBuiltInEncoderVelocity()
 
-    # def getIntakePivotAngle(self):
-    #     return self.algaePivotMotor.get_rotor_position().value_as_double
-
+    def getIntakePivotAngle(self):
+        return self.algaePivotMotor.get_rotor_position().value_as_double
+        return self.algaePivotMotor.get
     # def setPivotPosition(self, degrees):
     #     self.algaePivotMotor.set_control(self.request.with_position(degrees))
 

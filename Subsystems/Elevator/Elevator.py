@@ -1,4 +1,5 @@
 import commands2
+import libgrapplefrc
 from wpimath.controller import ProfiledPIDController
 from wpimath.trajectory import TrapezoidProfile
 import ntcore
@@ -22,6 +23,10 @@ class Elevator(commands2.Subsystem):
         self.elevatorMotorOne = TalonFX(ElevatorConstants.ELEVATOR_MOTOR_ONE)
         self.elevatorMotorTwo = TalonFX(ElevatorConstants.ELEVATOR_MOTOR_TWO)
 
+        self.elevatorProxSensor = libgrapplefrc.LaserCAN(2)
+
+        # currentElevatorPosition = self.getElevatorPosition()
+
         cfgElevatorOne = configs.TalonFXConfiguration()
         cfgElevatorTwo = configs.TalonFXConfiguration()
 
@@ -30,25 +35,36 @@ class Elevator(commands2.Subsystem):
 
         self.elevatorMotorTwo.set_control(controls.Follower(ElevatorConstants.ELEVATOR_MOTOR_ONE, False))
 
+        
+
+
         cfgElevatorOne = configs.TalonFXConfiguration()
         cfgElevatorOne.slot0.k_p = ElevatorConstants.ELEVATOR_P
         cfgElevatorOne.slot0.k_i = ElevatorConstants.ELEVATOR_I
         cfgElevatorOne.slot0.k_d = ElevatorConstants.ELEVATOR_D
-        cfgElevatorOne.voltage.peak_forward_voltage = 8
-        cfgElevatorOne.voltage.peak_reverse_voltage = -8
+        cfgElevatorOne.voltage.peak_forward_voltage = 12
+        cfgElevatorOne.voltage.peak_reverse_voltage = -12
+        cfgElevatorOne.motor_output.inverted = configs.config_groups.InvertedValue.CLOCKWISE_POSITIVE
+        cfgElevatorOne.feedback.sensor_to_mechanism_ratio = 7.75
         cfgElevatorOne.torque_current.peak_forward_torque_current = 120
         cfgElevatorOne.torque_current.peak_reverse_torque_current = -120
 
         cfgElevatorOne.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
 
+        motion_magic_configs = cfgElevatorOne.motion_magic
+        motion_magic_configs.motion_magic_cruise_velocity = 80 # Target cruise velocity of 80 rps
+        motion_magic_configs.motion_magic_acceleration = 160 # Target acceleration of 160 rps/s (0.5 seconds)
+        motion_magic_configs.motion_magic_jerk = 1600
+
         self.setConfigs(self.elevatorMotorOne, cfgElevatorOne)
         self.setConfigs(self.elevatorMotorTwo, cfgElevatorTwo)
+        self.elevatorMotorOne.set_position((self.getElevatorDistanceTOF() - 1.6)*1.438)
 
+        self.voltageControl = controls.DutyCycleOut(0)
 
-        # self.voltageControl = controls.DutyCycleOut(0)
+        self.positionVoltage = controls.MotionMagicVoltage(0)
 
-        # self.positionVoltage = controls.PositionVoltage(0).with_slot(0)
-
+        
         # self.elevatorMotorOne.setDistancePerPulse(.0059)
 
         # self.pid.reset(0)
@@ -65,8 +81,12 @@ class Elevator(commands2.Subsystem):
         """
         Sends subsystem info to console or smart dashboard
         """
-        #print(self.absoluteEncoder.getDistance())
+        self.sd.putNumber("Elevator position", self.getElevatorPosition())
+        self.sd.putNumber("Elevator Prox ", self.getElevatorDistanceTOF())
         pass
+
+    def getElevatorDistanceTOF(self):
+        return self.elevatorProxSensor.get_measurement().distance_mm / 25.4
 
     def getElevatorRPM(self):
         return self.elevatorMotorOne.getBuiltInEncoderPosition()
@@ -94,16 +114,20 @@ class Elevator(commands2.Subsystem):
         Args:
             position (float): a position value from 0-1.
         """
+        self.elevatorMotorOne.set_control(self.positionVoltage)
         self.elevatorMotorOne.set_position(position)
+
+    def getElevatorPosition(self):
+        return self.elevatorMotorOne.get_rotor_position().value_as_double
 
     def clamp(self,v, minval, maxval):
         return max(min(v, maxval), minval)
     
-    def getElevatorMotorPosition(self) -> float:
-        """Returns the swerve motor encoder position from 0-1.
+    # def getElevatorMotorPosition(self) -> float:
+    #     """Returns the swerve motor encoder position from 0-1.
 
-        Returns:
-            float: swerve motor encoder position.
-        """
-        return self.elevatorMotorOne.get_position().value % 1
+    #     Returns:
+    #         float: swerve motor encoder position.
+    #     """
+    #     return self.elevatorMotorOne.get_position().value % 1
     

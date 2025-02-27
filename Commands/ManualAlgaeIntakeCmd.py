@@ -22,10 +22,10 @@ class ManualAlgaeIntakeCmd(commands2.Command):
         pass
 
     def execute(self):
-        self.gorgina.setIntakePower(self.power())
+        self.gorgina.setIntakePower(self.power)
 
     def end(self, interrupted: bool):
-        self.gorgina.setIntakePower(-.1)
+        self.gorgina.setIntakePower(.1)
         pass
 
     def isFinished(self) -> bool:

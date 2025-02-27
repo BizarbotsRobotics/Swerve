@@ -2,7 +2,7 @@ import commands2
 import commands2.cmd
 import wpilib
 
-from Subsystems.Elevator.Elevator import Elevator, lOneElevatorHeight
+from Subsystems.Elevator.Elevator import Elevator
 from constants import ElevatorConstants
 
 
@@ -21,7 +21,7 @@ class SetElevatorPositionCmd(commands2.Command):
 
     def execute(self):
 
-        self.elevator.setElevatorPosition(self.position())
+        self.elevator.setElevatorPosition(self.position)
 
     def end(self, interrupted: bool):
         pass

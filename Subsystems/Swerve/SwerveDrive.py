@@ -1,6 +1,7 @@
 from math import pi
 from commands2 import Subsystem
 from Subsystems.Swerve.SwerveModule import SwerveModule
+from Subsystems.Vision.Vision import Vision
 from constants import SwerveConstants
 from wpimath.kinematics import SwerveDrive4Kinematics, ChassisSpeeds
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
@@ -15,24 +16,25 @@ from pathplannerlib.config import RobotConfig, PIDConstants
 from wpilib import DriverStation
 
 class SwerveDrive(Subsystem):
-    def __init__(self):
+    def __init__(self, vision: Vision):
         inst = ntcore.NetworkTableInstance.getDefault()
         inst.startServer()
         self.sd = inst.getTable("SmartDashboard")
+        self.vision = vision
     
         self.initializeIMU()
         self.initializeModules()
 
         self.kinematics = self.getSwerveDriveKinematics()
 
-        # self.swervePoseEstimator = estimator.SwerveDrive4PoseEstimator(self.kinematics,
-        #     self.getYaw(),
-        #     self.getModulePositions(),
-        #     Pose2d(),
-        #     (0.4,0,0.0),
-        #     (0.4, 0.0, 0.1)
-        #     #TODO Optimize these standard deviations later
-        #    )
+        self.swervePoseEstimator = estimator.SwerveDrive4PoseEstimator(self.kinematics,
+            self.getYaw(),
+            self.getModulePositions(),
+            Pose2d(),
+            (0.4,0,0.0),
+            (0.4, 0.0, 0.1)
+            #TODO Optimize these standard deviations later
+           )
         
         # AutoBuilder.configureHolonomic(
         #     self.getPose, # Robot pose supplier
@@ -187,7 +189,10 @@ class SwerveDrive(Subsystem):
         self.kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, pose.rotation()))
 
     def updateOdometry(self):
+        visionPose = self.vision.getPose()
         try:
+            self.swervePoseEstimator.setVisionMeasurementStdDevs([.7,.7,9999999])
+            self.swervePoseEstimator.addVisionMeasurement(visionPose[0], visionPose[1])
             self.swervePoseEstimator.update(self.getYaw(), self.getModulePositions())
             self.currentHeading = self.swervePoseEstimator.getEstimatedPosition().rotation().degrees().real            
         except Exception as e:

@@ -2,7 +2,7 @@ import commands2
 import commands2.cmd
 import wpilib
 
-from Subsystems.Elevator.Elevator import Elevator, lOneElevatorHeight
+from Subsystems.Elevator.Elevator import Elevator
 from Subsystems.Gorgina.Gorgina import Gorgina
 from constants import ElevatorConstants
 
@@ -21,7 +21,7 @@ class SetAlgaePivotCmd(commands2.Command):
         pass
 
     def execute(self):
-        pass
+        self.gorgina.setAlgaePivotPosition(self.position)
 
     def end(self, interrupted: bool):
         pass

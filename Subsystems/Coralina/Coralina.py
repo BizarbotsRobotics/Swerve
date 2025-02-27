@@ -1,10 +1,12 @@
 import commands2
+import libgrapplefrc.libgrapplefrc
 import ntcore
 import wpilib
 from constants import IntakeConstants
 from phoenix6.hardware import TalonFX
 import phoenix6
 import rev
+import libgrapplefrc
 
 class Coralina(commands2.Subsystem):
     
@@ -16,11 +18,12 @@ class Coralina(commands2.Subsystem):
         self.inst.startServer()
         self.sd = self.inst.getTable("SmartDashboard")
         
-        # self.coralinaProxSensor = lasercan.laserCAN(1)
-        self.pivotAbsoluteEncoder = wpilib.DutyCycleEncoder(8)
+        self.coralinaProxSensor = libgrapplefrc.LaserCAN(1)
+        
 
         self.coralIntakeMotor = rev.SparkMax(IntakeConstants.CORAL_INTAKE_MOTOR, rev.SparkLowLevel.MotorType.kBrushless)
         self.coralPivotMotor = rev.SparkMax(IntakeConstants.CORAL_PIVOT_MOTOR, rev.SparkLowLevel.MotorType.kBrushless)
+        self.pivotAbsoluteEncoder = self.coralPivotMotor.getAbsoluteEncoder()
 
         config = rev.SparkBaseConfig()
         config.closedLoop.P(IntakeConstants.CORAL_PIVOT_P)
@@ -28,13 +31,14 @@ class Coralina(commands2.Subsystem):
         config.closedLoop.D(IntakeConstants.CORAL_PIVOT_D)
         config.closedLoop.setFeedbackSensor(rev.ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder)
         config.setIdleMode(rev.SparkBaseConfig.IdleMode.kBrake)
+        config.absoluteEncoder.positionConversionFactor(360)
+        config.absoluteEncoder.zeroOffset(.095)
 
         
-        # config.encoder.positionConversionFactor = .2
+        
 
 
         self.pivotPID = self.coralPivotMotor.getClosedLoopController()
-
 
         
         self.coralPivotMotor.configure(config, rev.SparkBase.ResetMode.kResetSafeParameters, rev.SparkBase.PersistMode.kPersistParameters)
@@ -43,7 +47,8 @@ class Coralina(commands2.Subsystem):
 
         
     def periodic(self):
-        # self.setCoralinaProxVal()
+        #self.setCoralinaProxVal()
+        self.telemetry()
         pass
 
     def telemetry(self):
@@ -51,7 +56,8 @@ class Coralina(commands2.Subsystem):
         Sends subsystem info to console or smart dashboard
         """
         # self.sd.putBoolean("Coral Stored", self.getCoralStored())
-        # self.sd.putNumber("Coral Prox 1", self.coralinaProx)
+        self.sd.putNumber("Coral Prox ", self.coralinaProxSensor.get_measurement().distance_mm)
+        self.sd.putNumber("Coral pivot ", self.getPivotPositionDegrees())
         pass
 
     def getcoralIntakeRPM(self):
@@ -63,15 +69,22 @@ class Coralina(commands2.Subsystem):
     def setPivotPower(self, power):
         self.coralPivotMotor.set(power)
     
-    def setCoralPivotPosition(self, position):
-        self.coralPivotMotor.set_position(position)
+    def setCoralPivotPosition(self, cpa):
+        self.pivotPID.setReference(cpa, rev.SparkLowLevel.ControlType.kPosition)
+
+    def getCoralPivotPosition(self):
+        return self.coralPivotMotor.getAbsoluteEncoder().getPosition()
+
 
 
     # def setCoralinaProxVal(self):
     #     self.coralinaProx = self.coralinaProxSensor.getRange()
     #     pass
 
-    # def getCoralinaStored(self):
-    #     if self.coralinaProx < 200:
-    #         return True
-    #     return False
+    def getCoralinaStored(self):
+        if self.coralinaProxSensor.get_measurement().distance_mm < 20:
+            return True
+        return False
+    
+    def getPivotPositionDegrees(self):
+        return self.pivotAbsoluteEncoder.getPosition()
