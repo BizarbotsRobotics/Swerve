@@ -32,11 +32,14 @@ class Coralina(commands2.Subsystem):
         config.closedLoop.setFeedbackSensor(rev.ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder)
         config.setIdleMode(rev.SparkBaseConfig.IdleMode.kBrake)
         config.absoluteEncoder.positionConversionFactor(360)
-        config.absoluteEncoder.zeroOffset(.095)
+        config.absoluteEncoder.velocityConversionFactor(360)
+        config.absoluteEncoder.zeroOffset((0.845))
+        config.closedLoop.maxMotion.maxVelocity(600000)
+        config.closedLoop.maxMotion.maxAcceleration(50000)
+        config.closedLoop.maxMotion.allowedClosedLoopError(1)
+        #config.closedLoop.maxMotion.positionMode(rev.MAXMotionConfig.MAXMotionPositionMode.kMAXMotionTrapezoidal)
 
-        
-        
-
+        config.closedLoop.positionWrappingEnabled(True)
 
         self.pivotPID = self.coralPivotMotor.getClosedLoopController()
 
@@ -55,7 +58,7 @@ class Coralina(commands2.Subsystem):
         """
         Sends subsystem info to console or smart dashboard
         """
-        # self.sd.putBoolean("Coral Stored", self.getCoralStored())
+        self.sd.putBoolean("Coral Stored", self.getCoralinaStored())
         self.sd.putNumber("Coral Prox ", self.coralinaProxSensor.get_measurement().distance_mm)
         self.sd.putNumber("Coral pivot ", self.getPivotPositionDegrees())
         pass
@@ -70,7 +73,7 @@ class Coralina(commands2.Subsystem):
         self.coralPivotMotor.set(power)
     
     def setCoralPivotPosition(self, cpa):
-        self.pivotPID.setReference(cpa, rev.SparkLowLevel.ControlType.kPosition)
+        self.pivotPID.setReference(cpa, rev.SparkLowLevel.ControlType.kMAXMotionPositionControl)
 
     def getCoralPivotPosition(self):
         return self.coralPivotMotor.getAbsoluteEncoder().getPosition()
@@ -82,7 +85,7 @@ class Coralina(commands2.Subsystem):
     #     pass
 
     def getCoralinaStored(self):
-        if self.coralinaProxSensor.get_measurement().distance_mm < 20:
+        if self.coralinaProxSensor.get_measurement().distance_mm < 10:
             return True
         return False
     

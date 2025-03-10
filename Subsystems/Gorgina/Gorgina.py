@@ -62,10 +62,7 @@ class Gorgina(commands2.Subsystem):
         self.algaeIntakeMotor.set(power)
 
     def setPivotPower(self, power):
-        if(power < .05 and power > -.05):
-            self.algaePivotMotor.set(-.025)
-        else:
-            self.algaePivotMotor.set(power)
+        self.algaePivotMotor.set(power)
 
     def setAlgaePivotPosition(self, apa):
         self.pivotPID.setReference(apa, rev.SparkLowLevel.ControlType.kPosition)

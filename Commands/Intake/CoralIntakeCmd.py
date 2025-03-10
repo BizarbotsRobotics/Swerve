@@ -6,12 +6,11 @@ from Subsystems.Coralina.Coralina import Coralina
 
 
 
-class CoralPivotCmd(commands2.Command):
-    """A command that will run the coral intake manually"""
+class CoralIntakeCmd(commands2.Command):
+    """A command that will run the coral intake. Ends when a coral is stored"""
 
-    def __init__(self, coralina : Coralina, power) -> None:
+    def __init__(self, coralina : Coralina) -> None:
         self.coralina = coralina
-        self.power = power
         super().__init__()
         self.addRequirements(self.coralina)
 
@@ -20,10 +19,11 @@ class CoralPivotCmd(commands2.Command):
 
     def execute(self):
 
-        self.coralina.setPivotPower(self.power())
+        self.coralina.setIntakePower(.35)
 
     def end(self, interrupted: bool):
+        self.coralina.setIntakePower(.1)
         pass
 
     def isFinished(self) -> bool:
-        return False
+        return self.coralina.getCoralinaStored()

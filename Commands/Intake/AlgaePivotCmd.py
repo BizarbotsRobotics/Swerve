@@ -4,7 +4,7 @@ import commands2.cmd
 from Subsystems.Gorgina.Gorgina import Gorgina
 
 class AlgaePivotCmd(commands2.Command):
-    """A command that will toggle the algae intake."""
+    """A command that will toggle the algae pivot."""
 
     def __init__(self, gorgina: Gorgina) -> None:
         self.gorgina = gorgina

@@ -3,16 +3,15 @@ import commands2.cmd
 import wpilib
 
 from Subsystems.Elevator.Elevator import Elevator
-from constants import ElevatorConstants
+from constants import SwerveConstants
 
 
+class ManualElevatorCmd(commands2.Command):
+    """A command that will run manual controls for the elevator height"""
 
-class SetElevatorPositionCmd(commands2.Command):
-    """A command that will align the robot to an April Tag. Not great for speed but last resort"""
-
-    def __init__(self, elevator : Elevator, position) -> None:
+    def __init__(self, elevator : Elevator, power) -> None:
         self.elevator = elevator
-        self.position = position
+        self.power = power
         super().__init__()
         self.addRequirements(self.elevator)
 
@@ -21,7 +20,7 @@ class SetElevatorPositionCmd(commands2.Command):
 
     def execute(self):
 
-        self.elevator.setElevatorPosition(self.position)
+        self.elevator.setElevatorPower(self.power())
 
     def end(self, interrupted: bool):
         pass

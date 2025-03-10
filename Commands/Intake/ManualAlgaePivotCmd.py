@@ -4,7 +4,7 @@ import commands2.cmd
 from Subsystems.Gorgina.Gorgina import Gorgina
 
 class ManualAlgaePivotCmd(commands2.Command):
-    """A command that will toggle the algae intake."""
+    """A command that will run manual controls for the algae pivot"""
 
     def __init__(self, gorgina: Gorgina, power) -> None:
         self.gorgina = gorgina
@@ -20,6 +20,7 @@ class ManualAlgaePivotCmd(commands2.Command):
         
     def end(self, interrupted: bool):
        pass
+        
 
     def isFinished(self) -> bool:
         # End when the controller is at the reference.

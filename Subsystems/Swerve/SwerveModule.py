@@ -70,6 +70,8 @@ class SwerveModule:
         cfgDrive.voltage.peak_reverse_voltage = -8
         cfgDrive.torque_current.peak_forward_torque_current = 120
         cfgDrive.torque_current.peak_reverse_torque_current = -120
+        cfgDrive.feedback.sensor_to_mechanism_ratio = 1/.05
+
 
         cfgDrive.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
         

@@ -17,14 +17,10 @@ class Climber(commands2.Subsystem):
         self.inst = ntcore.NetworkTableInstance.getDefault()
         self.inst.startServer()
         self.sd = self.inst.getTable("SmartDashboard")
-        # self.coralinaProxSensor = lasercan.laserCAN(0)
 
 
 
-        self.climberMotorOne = hardware.TalonFX(ClimberConstants.CLIMBER_MOTOR_ONE)
-        self.climberMotorTwo = hardware.TalonFX(ClimberConstants.CLIMBER_MOTOR_TWO)
-
-        self.climberMotorTwo.set_control(controls.Follower(self.climberMotorOne.device_id, True))
+        self.climberMotor = hardware.TalonFX(ClimberConstants.CLIMBER_MOTOR_ONE)
         
 
         self.voltageControl = controls.DutyCycleOut(0)
@@ -44,4 +40,4 @@ class Climber(commands2.Subsystem):
         pass
 
     def setPower(self, power):
-        self.climberMotorOne.set_control(self.voltageControl.with_output(power))    
+        self.climberMotor.set_control(self.voltageControl.with_output(power))    

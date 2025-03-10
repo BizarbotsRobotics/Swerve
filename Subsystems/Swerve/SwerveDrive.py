@@ -1,5 +1,6 @@
 from math import pi
 from commands2 import Subsystem
+import wpilib
 from Subsystems.Swerve.SwerveModule import SwerveModule
 from Subsystems.Vision.Vision import Vision
 from constants import SwerveConstants
@@ -68,9 +69,12 @@ class SwerveDrive(Subsystem):
         #     self # Reference to this subsystem to set requirements
         # )
 
+        self.field = wpilib.Field2d()
+        wpilib.SmartDashboard.putData(self.field)
+
     def periodic(self):
         self.debug()
-        # self.updateOdometry()
+        self.updateOdometry()
 
     def initializeModules(self):
         try:
@@ -141,10 +145,10 @@ class SwerveDrive(Subsystem):
         self.drive(velocity, True, None)
 
     def debug(self):
-        # print(self.getPose())
+        self.field.setRobotPose(self.getPose())
         for module in self.swerveModules:
             module.debug()
-            self.sd.putNumber("IMU: ", self.imu.get_yaw().value)
+        self.sd.putNumber("x: ", self.swervePoseEstimator.getEstimatedPosition().x_feet)
 
 
     def initializeIMU(self):
@@ -192,12 +196,23 @@ class SwerveDrive(Subsystem):
         visionPose = self.vision.getPose()
         try:
             self.swervePoseEstimator.setVisionMeasurementStdDevs([.7,.7,9999999])
-            self.swervePoseEstimator.addVisionMeasurement(visionPose[0], visionPose[1])
+            if visionPose is not None:
+                self.swervePoseEstimator.addVisionMeasurement(visionPose[0], visionPose[1])
             self.swervePoseEstimator.update(self.getYaw(), self.getModulePositions())
-            self.currentHeading = self.swervePoseEstimator.getEstimatedPosition().rotation().degrees().real            
+            self.currentHeading = self.swervePoseEstimator.getEstimatedPosition().rotation().degrees().real
+                        
         except Exception as e:
             raise e
         return None
+    
+        # try:
+        #     self.swervePoseEstimator.update(self.yaw(), self.getModulePositions())
+        #     self.currentHeading = self.swervePoseEstimator.getEstimatedPosition().rotation().degrees().real
+
+        # except Exception as e:
+        #     raise e
+        # return None
+    
 
 
 

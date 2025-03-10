@@ -5,13 +5,13 @@ import wpilib
 from Subsystems.Cimber.Climber import Climber
 
 
-class ClimberCmd(commands2.Command):
-    """A command that will align the robot to an April Tag. Not great for speed but last resort"""
+class ClimbCmd(commands2.Command):
+    """A command that will manually control the position of the climber"""
 
-    def __init__(self, climber : Climber, powerNeg, powerPos) -> None:
+    def __init__(self, climber : Climber, power) -> None:
         self.climber = climber
-        self.powerNeg = powerNeg
-        self.powerPos = powerPos
+        self.power = power
+
         super().__init__()
         self.addRequirements(self.climber)
 
@@ -19,7 +19,7 @@ class ClimberCmd(commands2.Command):
         pass
 
     def execute(self):
-        self.climber.setPower(self.powerPos() + self.powerNeg())
+        self.climber.setPower(self.power())
 
     def end(self, interrupted: bool):
         pass

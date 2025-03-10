@@ -6,12 +6,12 @@ from Subsystems.Coralina.Coralina import Coralina
 
 
 
-class SetCoralPivotCmd(commands2.Command):
-    """A command that will align the robot to an April Tag. Not great for speed but last resort"""
+class ManualCoralIntakeCmd(commands2.Command):
+    """A command that will run manual controls for the coral intake"""
 
-    def __init__(self, coralina : Coralina, position) -> None:
+    def __init__(self, coralina : Coralina, power) -> None:
         self.coralina = coralina
-        self.position = position
+        self.power = power
         super().__init__()
         self.addRequirements(self.coralina)
 
@@ -20,9 +20,10 @@ class SetCoralPivotCmd(commands2.Command):
 
     def execute(self):
 
-        self.coralina.setCoralPivotPosition(self.position)
+        self.coralina.setIntakePower(self.power()*.75)
 
     def end(self, interrupted: bool):
+        self.coralina.setIntakePower(-.1)
         pass
 
     def isFinished(self) -> bool:

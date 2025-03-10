@@ -6,23 +6,20 @@ from Subsystems.Gorgina.Gorgina import Gorgina
 
 
 
+class AlgaeIntakeCmd(commands2.Command):
+    """A command that will run the algae intake. Ends when an algae is stored"""
 
-
-
-class ManualAlgaeIntakeCmd(commands2.Command):
-    """A command that will align the robot to an April Tag. Not great for speed but last resort"""
-
-    def __init__(self, gorgina : Gorgina, power) -> None:
+    def __init__(self, gorgina : Gorgina) -> None:
         self.gorgina = gorgina
-        self.power = power
         super().__init__()
-        #self.addRequirements(self.gorgina)
+        self.addRequirements(self.gorgina)
 
     def initialize(self):  
         pass
 
     def execute(self):
-        self.gorgina.setIntakePower(self.power)
+
+        self.gorgina.setIntakePower(.35)
 
     def end(self, interrupted: bool):
         self.gorgina.setIntakePower(.1)

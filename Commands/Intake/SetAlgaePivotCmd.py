@@ -9,7 +9,7 @@ from constants import ElevatorConstants
 
 
 class SetAlgaePivotCmd(commands2.Command):
-    """A command that will align the robot to an April Tag. Not great for speed but last resort"""
+    """A command that will set the algae pivot to a specified position"""
 
     def __init__(self, gorgina : Gorgina, position) -> None:
         self.gorgina = gorgina
@@ -27,4 +27,6 @@ class SetAlgaePivotCmd(commands2.Command):
         pass
 
     def isFinished(self) -> bool:
+        if (self.position - 5) < self.gorgina.getAlgaePivotPosition() < (self.position + 5):
+            return True
         return False

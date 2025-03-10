@@ -67,9 +67,9 @@ class IntakeConstants:
     CORAL_INTAKE_MOTOR = 15
     CORAL_PIVOT_MOTOR = 14
 
-    CORAL_PIVOT_P = 0.03
+    CORAL_PIVOT_P = 0.008
     CORAL_PIVOT_I = 0
-    CORAL_PIVOT_D = 0
+    CORAL_PIVOT_D = 0.005
 
     ZERO_CORAL_ANGLE = 0
     L_ONE_CORAL_ANGLE = 0
@@ -82,10 +82,10 @@ class ElevatorConstants:
     ELEVATOR_MOTOR_ONE = 1
     ELEVATOR_MOTOR_TWO = 2
 
-    ELEVATOR_P = 15
+    ELEVATOR_P = 5
     ELEVATOR_I = 0
 
-    ELEVATOR_D = .001
+    ELEVATOR_D = 0
 
     L_ONE_ELEVATOR_HEIGHT = 40
     L_TWO_ELEVATOR_HEIGHT = 0
@@ -97,6 +97,7 @@ class ElevatorConstants:
     ZERO_ELEVATOR_HEIGHT = 0
     BARGE_ELEVATOR_HEIGHT = 0
     PROCESSOR_ELEVATOR_HEIGHT = 0
+    
 
 
 
@@ -104,6 +105,5 @@ class ElevatorConstants:
 
 class ClimberConstants:
     CLIMBER_MOTOR_ONE = 15
-    CLIMBER_MOTOR_TWO = 20
 
 
