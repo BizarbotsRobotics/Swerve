@@ -19,7 +19,7 @@ class HumanPlayerCoralCmd(commands2.SequentialCommandGroup):
         self.elevator = elevator
         super().__init__()
         self.addRequirements(self.coralina, self.elevator)
-        self.addCommands(SetCoralPivotCmd(self.coralina, 100), SetElevatorPositionCmd(self.elevator, 18.7), CoralIntakeCmd(self.coralina, 200))
+        self.addCommands(SetCoralPivotCmd(self.coralina, 100), SetElevatorPositionCmd(self.elevator, 18.7), CoralIntakeCmd(self.coralina, 200), SetCoralPivotCmd(self.coralina, 40), SetElevatorPositionCmd(self.elevator,0))
 
     def isFinished(self) -> bool:
         return self.coralina.getCoralinaStored()

@@ -26,4 +26,4 @@ class AlgaeIntakeCmd(commands2.Command):
         pass
 
     def isFinished(self) -> bool:
-        return False
+        return self.gorgina.getAlgaeStored()

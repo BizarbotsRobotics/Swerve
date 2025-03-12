@@ -26,5 +26,4 @@ class GroundPickupCmd(commands2.SequentialCommandGroup):
 
 
     def isFinished(self) -> bool:
-        return False
-        # return not self.gorgina.getAlgaeStored()
+        return self.gorgina.getAlgaeStored()

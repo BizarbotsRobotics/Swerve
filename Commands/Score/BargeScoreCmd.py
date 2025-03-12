@@ -19,7 +19,7 @@ class BargeScoreCmd(commands2.SequentialCommandGroup):
         self.elevator = elevator
         super().__init__()
         self.addRequirements(self.gorgina, self.elevator)
-        self.addCommands(SetAlgaePivotCmd(self.gorgina, 100), SetElevatorPositionCmd(self.elevator, 18.7), AlgaeOuttakeCmd(self.gorgina))
+        self.addCommands(SetAlgaePivotCmd(self.gorgina, 100), SetElevatorPositionCmd(self.elevator, 18.7), AlgaeOuttakeCmd(self.gorgina), SetAlgaePivotCmd(90), SetElevatorPositionCmd(0))
 
     def isFinished(self) -> bool:
         return not self.gorgina.getAlgaeScored()

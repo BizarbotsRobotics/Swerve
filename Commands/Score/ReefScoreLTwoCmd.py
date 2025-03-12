@@ -19,7 +19,7 @@ class ReefScoreLTwoCmd(commands2.SequentialCommandGroup):
         self.elevator = elevator
         super().__init__()
         self.addRequirements(self.coralina, self.elevator)
-        self.addCommands(SetCoralPivotCmd(self.coralina, 90), SetElevatorPositionCmd(self.elevator, 6), SetCoralPivotCmd(self.coralina, 190), CoralOuttakeCmd(self.coralina))
+        self.addCommands(SetCoralPivotCmd(self.coralina, 90), SetElevatorPositionCmd(self.elevator, 6), SetCoralPivotCmd(self.coralina, 190), CoralOuttakeCmd(self.coralina), SetCoralPivotCmd(90), SetElevatorPositionCmd(0))
 
     def isFinished(self) -> bool:
         return not self.coralina.getCoralinaStored()

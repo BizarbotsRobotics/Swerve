@@ -93,7 +93,7 @@ class Gorgina(commands2.Subsystem):
     #     self.prox = self.gorginaProxSensor.getRange()
     #     pass
 
-    # def getAlgaeStored(self):
-    #     if self.prox < 200:
-    #         return True
-    #     return False
+    def getAlgaeStored(self):
+        if self.prox < 200:
+            return True
+        return False

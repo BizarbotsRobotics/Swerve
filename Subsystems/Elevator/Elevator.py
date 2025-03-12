@@ -20,8 +20,8 @@ class Elevator(commands2.Subsystem):
         self.inst.startServer()
         self.sd = self.inst.getTable("SmartDashboard")
 
-        self.elevatorMotorOne = TalonFX(ElevatorConstants.ELEVATOR_MOTOR_TWO)
-        self.elevatorMotorTwo = TalonFX(ElevatorConstants.ELEVATOR_MOTOR_ONE)
+        self.elevatorMotorOne = TalonFX(ElevatorConstants.ELEVATOR_MOTOR_ONE)
+        self.elevatorMotorTwo = TalonFX(ElevatorConstants.ELEVATOR_MOTOR_TWO)
 
         self.elevatorProxSensor = libgrapplefrc.LaserCAN(2)
 
@@ -49,26 +49,26 @@ class Elevator(commands2.Subsystem):
         cfgElevatorOne.torque_current.peak_reverse_torque_current = -120
 
 
-        # motion_magic_configs = cfgElevatorOne.motion_magic
-        # motion_magic_configs.motion_magic_cruise_velocity = 80 # Target cruise velocity of 80 rps
-        # motion_magic_configs.motion_magic_acceleration = 40 # Target acceleration of 160 rps/s (0.5 seconds)
-        # motion_magic_configs.motion_magic_jerk = 400
+        motion_magic_configs = cfgElevatorOne.motion_magic
+        motion_magic_configs.motion_magic_cruise_velocity = 80 # Target cruise velocity of 80 rps
+        motion_magic_configs.motion_magic_acceleration = 40 # Target acceleration of 160 rps/s (0.5 seconds)
+        motion_magic_configs.motion_magic_jerk = 400
         
 
         self.setConfigs(self.elevatorMotorOne, cfgElevatorOne)
         self.setConfigs(self.elevatorMotorTwo, cfgElevatorTwo)
-        # self.elevatorMotorOne.set_position(self.getElevatorDistanceTOF() - 2)
+        self.elevatorMotorOne.set_position(self.getElevatorDistanceTOF() - 2)
 
         self.voltageControl = controls.DutyCycleOut(0)
 
-        #self.positionVoltage = controls.MotionMagicVoltage(0)
+        self.positionVoltage = controls.MotionMagicVoltage(0)
 
         
-        # self.elevatorMotorOne.setDistancePerPulse(.0059)
+        #self.elevatorMotorOne.setDistancePerPulse(.0059)
 
-        # self.pid.reset(0)
+        #self.pid.reset(0)
 
-        # self.pid.setTolerance(1,1)
+        #self.pid.setTolerance(1,1)
 
         
         # self.synchronizeEncoderQueued = True
@@ -91,7 +91,7 @@ class Elevator(commands2.Subsystem):
         return self.elevatorMotorOne.getBuiltInEncoderPosition()
     
     def setElevatorPower(self, power):
-        self.elevatorMotorOne.set_control(self.voltageControl.with_output(-power)) 
+        self.elevatorMotorOne.set_control(self.voltageControl.with_output(power)) 
 
     def getElevatorEncoder(self):
         pass
@@ -114,7 +114,7 @@ class Elevator(commands2.Subsystem):
             position (float): a position value from 0-1.
         """
         self.elevatorMotorOne.set_control(self.positionVoltage.with_position(position * 1.75))
-       # self.elevatorMotorOne.set_position(position)
+        #self.elevatorMotorOne.set_position(position)
 
     def getElevatorPosition(self):
         return self.elevatorMotorOne.get_position().value / 1.75
@@ -122,11 +122,11 @@ class Elevator(commands2.Subsystem):
     def clamp(self,v, minval, maxval):
         return max(min(v, maxval), minval)
     
-    # def getElevatorMotorPosition(self) -> float:
-    #     """Returns the swerve motor encoder position from 0-1.
+    def getElevatorMotorPosition(self) -> float:
+        """Returns the swerve motor encoder position from 0-1.
 
-    #     Returns:
-    #         float: swerve motor encoder position.
-    #     """
-    #     return self.elevatorMotorOne.get_position().value % 1
+        Returns:
+            float: swerve motor encoder position.
+        """
+        return self.elevatorMotorOne.get_position().value % 1
     

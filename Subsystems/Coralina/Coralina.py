@@ -58,8 +58,8 @@ class Coralina(commands2.Subsystem):
         """
         Sends subsystem info to console or smart dashboard
         """
-        self.sd.putBoolean("Coral Stored", self.getCoralinaStored())
-        self.sd.putNumber("Coral Prox ", self.coralinaProxSensor.get_measurement().distance_mm)
+        # self.sd.putBoolean("Coral Stored", self.getCoralinaStored())
+        # self.sd.putNumber("Coral Prox ", self.coralinaProxSensor.get_measurement().distance_mm)
         self.sd.putNumber("Coral pivot ", self.getPivotPositionDegrees())
         pass
 
@@ -84,10 +84,10 @@ class Coralina(commands2.Subsystem):
     #     self.coralinaProx = self.coralinaProxSensor.getRange()
     #     pass
 
-    def getCoralinaStored(self):
-        if self.coralinaProxSensor.get_measurement().distance_mm < 10:
-            return True
-        return False
+    # def getCoralinaStored(self):
+    #     if self.coralinaProxSensor.get_measurement().distance_mm < 10:
+    #         return True
+    #     return False
     
     def getPivotPositionDegrees(self):
         return self.pivotAbsoluteEncoder.getPosition()

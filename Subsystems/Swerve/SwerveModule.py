@@ -2,6 +2,8 @@ import math
 import ntcore
 from phoenix6 import StatusCode, hardware, controls, configs
 from wpilib import AnalogEncoder
+import wpimath
+import wpimath.units
 from constants import SwerveConstants
 from wpimath.kinematics import SwerveModuleState, SwerveModulePosition
 from wpimath.geometry import Rotation2d
@@ -46,6 +48,8 @@ class SwerveModule:
         cfgSwerve.slot0.k_p = SwerveConstants.SWERVE_P
         cfgSwerve.slot0.k_i = SwerveConstants.SWERVE_I
         cfgSwerve.slot0.k_d = SwerveConstants.SWERVE_D
+
+        #Try changing peak voltage
         cfgSwerve.voltage.peak_forward_voltage = 8
         cfgSwerve.voltage.peak_reverse_voltage = -8
         cfgSwerve.torque_current.peak_forward_torque_current = 120
@@ -66,11 +70,11 @@ class SwerveModule:
         cfgDrive.slot0.k_p = SwerveConstants.DRIVE_P
         cfgDrive.slot0.k_i = SwerveConstants.DRIVE_I
         cfgDrive.slot0.k_d = SwerveConstants.DRIVE_D
-        cfgDrive.voltage.peak_forward_voltage = 8
-        cfgDrive.voltage.peak_reverse_voltage = -8
+        cfgDrive.voltage.peak_forward_voltage = 12
+        cfgDrive.voltage.peak_reverse_voltage = -12
         cfgDrive.torque_current.peak_forward_torque_current = 120
         cfgDrive.torque_current.peak_reverse_torque_current = -120
-        cfgDrive.feedback.sensor_to_mechanism_ratio = 1/.05
+        cfgDrive.feedback.sensor_to_mechanism_ratio = SwerveConstants.DRIVE_GEAR_RATIO
 
 
         cfgDrive.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
@@ -149,15 +153,15 @@ class SwerveModule:
         Returns:
             float: swerve motor encoder position.
         """
-        return self.swerveMotor.get_position().value % 1
+        return self.swerveMotor.get_position().value_as_double % 1
     
     def getDriveMotorPosition(self) -> float:
-        """Returns the swerve motor encoder position from 0-1.
+        """Returns the drive motor encoder position
 
         Returns:
             float: swerve motor encoder position.
         """
-        return self.driveMotor.get_position().value % 1
+        return self.driveMotor.get_position().value_as_double
     
     def getSwervePositionDegrees(self) -> float:  
         return self.getSwerveMotorPosition() * 360
@@ -180,7 +184,8 @@ class SwerveModule:
         return SwerveModuleState(velocity, angle)
     
     def getSwerveModulePosition(self):
-        position = self.getDriveMotorPosition()
+
+        position = self.getDriveMotorPosition() * (4 * math.pi)
         azimuth = self.getSwervePositionRadians()
         return SwerveModulePosition(position, Rotation2d(azimuth))
 

@@ -11,6 +11,7 @@ import commands2.cmd
 import wpilib
 
 from Commands.Climber.ClimbCmd import ClimbCmd
+from Commands.Drive.DriveReefCmd import DriveReefCmd
 from Commands.Intake.AlgaeLThreeCmd import AlgaeLThreeCmd
 from Commands.Intake.AlgaeLTwoCmd import AlgaeLTwoCmd
 from Commands.Intake.CoralIntakeCmd import CoralIntakeCmd
@@ -66,27 +67,37 @@ class RobotContainer:
         self.swerveDrive.setDefaultCommand(DriveCmd(self.swerveDrive, self.driverController.getLeftY, self.driverController.getLeftX, self.driverController.getRightX))
 
         # Operator Controller - Manual Elevator
-        self.elevator.setDefaultCommand(ManualElevatorCmd(self.elevator, self.operatorController.getLeftY))
-        #self.climber.setDefaultCommand(ClimbCmd(self.climber, self.operatorController.getRightY))
-        self.gorgina.setDefaultCommand(ManualAlgaeIntakeCmd(self.gorgina, self.operatorController.getRightY))
+        #self.elevator.setDefaultCommand(ManualElevatorCmd(self.elevator, self.operatorController.getLeftY))
+
+
+        #self.gorgina.setDefaultCommand(ManualAlgaeIntakeCmd(self.gorgina, self.operatorController.getRightY))
         #self.coralina.setDefaultCommand(ManualCoralIntakeCmd(self.coralina, self.operatorController.getRightX))
         
+        # Comp Ready Cmds
+
+        # Hang - Xbox Button Operator
+        self.climber.setDefaultCommand(ClimbCmd(self.climber, self.operatorController.getLeftY))
 
         self.configureButtonBindings()
 
         
 
     def configureButtonBindings(self) -> None:
+
         """
         Use this method to define your button->command mappings. Buttons can be created by
         instantiating a :GenericHID or one of its subclasses (Joystick or XboxController),
         and then passing it to a JoystickButton.
         """
 
-        # Manual Intake and Outtake for Coral - Triggers Operator
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.leftTrigger).whileTrue(
-        #     ManualCoralIntakeCmd(self.coralina, -1)
-        # )
+        self.chooser = wpilib.SendableChooser()
+        self.chooser.addOption("Drive Forward", DriveCmd(self.swerveDrive, 0, 0.5, 0).withTimeout(3))
+        algaePivotTrigger = commands2.button.Trigger(lambda: self.gorgina.getAlgaePivotPosition > 110)
+
+        #Manual Intake and Outtake for Coral - Triggers Operator
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).onTrue(
+            SetElevatorPositionCmd(self.elevator, -6)
+        )
 
         # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.rightTrigger).whileTrue(
         #     ManualCoralIntakeCmd(self.coralina, .5)
@@ -102,34 +113,31 @@ class RobotContainer:
         # )
 
         # # Score Barge - Left Stick Button Operator
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kLeftStick).whileTrue(
-        #     BargeScoreCmd(self.gorgina, self.elevator)
-        # )
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kLeftStick).onTrue(
+            BargeScoreCmd(self.gorgina, self.elevator)
+        )
 
         # # Algae removal on L3 & L2 - Up & Down D Pad Operator
-        # commands2.button.povbutton(self.operatorController, wpilib.XboxController.POVUp).onTrue(
-        #     AlgaeLThreeCmd(self.gorgina)
-        # )
-        # commands2.button.povbutton(self.operatorController, wpilib.XboxController.POVDown).onTrue(
-        #     AlgaeLTwoCmd(self.gorgina)
-        # )
-
-        # # Hang - Xbox Button Operator
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kStart).onTrue(
-        #     ClimbCmd(self.climber)
-        # )
+        commands2.button.POVButton(self.operatorController, wpilib.XboxController.POVUp).onTrue(
+            AlgaeLThreeCmd(self.gorgina)
+        )
+        commands2.button.POVButton(self.operatorController, wpilib.XboxController.POVDown).onTrue(
+            AlgaeLTwoCmd(self.gorgina)
+        )
 
         # # Human Player Station - Right Trigger Driver
-        # commands2.button.JoystickButton(self.driverController, wpilib.XboxController.rightTrigger).onTrue(
-        #     HumanPlayerCoralCmd(self.coralina, self.elevator)
-        # )
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.POVLeft).onTrue(
+            HumanPlayerCoralCmd(self.coralina, self.elevator)
+        )
+
+        algaePivotTrigger.onTrue(SetCoralPivotCmd(self.coralina, 90))
 
         # Align to coral column - Left & Right d pad Operator
-        # commands2.button.povbutton(self.operatorController, wpilib.XboxController.POVLeft).onTrue(
+        # commands2.button.povbutton(self.driverController, wpilib.XboxController.POVLeft).onTrue(
         #     DriveReefCmd(self.vision)
         # )
 
-        # commands2.button.povbutton(self.operatorController, wpilib.XboxController.POVRight).onTrue(
+        # commands2.button.povbutton(self.driverController, wpilib.XboxController.POVRight).onTrue(
         #     DriveReefCmd(self.vision)
         # )
 
@@ -142,25 +150,25 @@ class RobotContainer:
 
         # Ready for comp cmds
 
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kX).onTrue(
-        #     ReefScoreLTwoCmd(self.coralina, self.elevator)
-        # )
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kX).onTrue(
+            ReefScoreLTwoCmd(self.coralina, self.elevator)
+        )
 
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kY).onTrue(
-        #     ReefScoreLThreeCmd(self.coralina, self.elevator)
-        # )
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kY).onTrue(
+            ReefScoreLThreeCmd(self.coralina, self.elevator)
+        )
 
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kB).onTrue(
-        #     ReefScoreLFourCmd(self.coralina, self.elevator)
-        # )
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kB).onTrue(
+            ReefScoreLFourCmd(self.coralina, self.elevator)
+        )
 
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kStart).onTrue(
-        #     GroundPickupCmd(self.gorgina, self.elevator)
-        # )
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kStart).onTrue(
+            GroundPickupCmd(self.gorgina, self.elevator)
+        )
 
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).onTrue(
-        #     ScoreProcessorCmd(self.gorgina, self.elevator)
-        # )
+        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).onTrue(
+            ScoreProcessorCmd(self.gorgina, self.elevator)
+        )
 
 
         
@@ -172,11 +180,11 @@ class RobotContainer:
 
 
     def getAutonomousCommand(self) -> commands2.Command:
-        """Use this to pass the autonomous command to the main {@link Robot} class.
+        """Use this to pass the autonomous command to the main {Robot} class.
 
         :returns: the command to run in autonomous
         """
-        return commands2.cmd.none()
+        return self.chooser.getSelected()
 
 def returnOne():
     return 1

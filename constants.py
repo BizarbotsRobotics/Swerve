@@ -5,6 +5,8 @@ class SwerveConstants:
     SWERVE_I = 0
     SWERVE_D = 0.1
 
+    DRIVE_GEAR_RATIO = 6.12
+
     DRIVE_P = 2.4
     DRIVE_I = 0
     DRIVE_D = 0.1
@@ -67,7 +69,7 @@ class IntakeConstants:
     CORAL_INTAKE_MOTOR = 15
     CORAL_PIVOT_MOTOR = 14
 
-    CORAL_PIVOT_P = 0.008
+    CORAL_PIVOT_P = 0.05
     CORAL_PIVOT_I = 0
     CORAL_PIVOT_D = 0.005
 
