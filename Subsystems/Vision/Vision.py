@@ -19,7 +19,12 @@ class Vision(commands2.Subsystem):
         self.inst.startServer()
         self.sd = self.inst.getTable("SmartDashboard")
 
-        self.staticLimelight = Limelight("10.54.94.3")
+        self.staticLimelight = Limelight("10.54.94.11")
+
+        results = self.staticLimelight.get_results()
+        status = self.staticLimelight.get_status()
+
+        self.staticLimelight.enable_websocket()
 
         self.botPose = {"red": None, "blue": None}
 
@@ -53,11 +58,11 @@ class Vision(commands2.Subsystem):
         #TODO implement megatag 2
         results = self.staticLimelight.get_latest_results()
         parsedResults = limelightresults.parse_results(results)
-
         if parsedResults is not None:
             bluePose = parsedResults.botpose_wpiblue
             redPose = parsedResults.botpose_wpired
 
-        #TODO Fix for both red alliance as well
-            if len(parsedResults.fiducialResults) >= 2:
+            #TODO Fix for both red alliance as well
+            if len(parsedResults.fiducialResults) >= 1:
                 return [bluePose, parsedResults.timestamp]
+            

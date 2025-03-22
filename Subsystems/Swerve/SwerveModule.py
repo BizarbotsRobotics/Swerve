@@ -185,7 +185,7 @@ class SwerveModule:
     
     def getSwerveModulePosition(self):
 
-        position = self.getDriveMotorPosition() * (4 * math.pi)
+        position = self.getDriveMotorPosition() * (0.102 * math.pi)
         azimuth = self.getSwervePositionRadians()
         return SwerveModulePosition(position, Rotation2d(azimuth))
 

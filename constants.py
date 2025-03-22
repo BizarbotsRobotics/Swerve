@@ -1,3 +1,6 @@
+import math
+
+
 class SwerveConstants:
     SWERVE_GEAR_RATIO = 21.42857
 
@@ -107,5 +110,73 @@ class ElevatorConstants:
 
 class ClimberConstants:
     CLIMBER_MOTOR_ONE = 15
+
+class AutoAimConstants:
+    kP = 0.004537
+    kI = 0.0000
+    kD = 0.000
+    AutoAimPIDTolerance = 1.0
+        # // public static final double DeflectorPosInValue = 0.0
+        # // public static final double DeflectorPosOutValue = 0.0
+
+
+class AutoFollowConstants:
+        kP = 0.271
+        kI = 0
+        kD = 0.0
+
+       
+
+        AutoFollowPIDTolerance = 1.0
+        # // public static final double DeflectorPosInValue = 0.0
+        # // public static final double DeflectorPosOutValue = 0.0
+
+    
+
+class AutoRotateConstants:
+    kP = 0.002037
+    kI = 0.0000665
+    kD = 0.0003333
+
+    Tolerance = 6.0
+        # // public static final double DeflectorPosInValue = 0.0
+        # // public static final double DeflectorPosOutValue = 0.0
+
+    
+
+class AutoTranslateConstants: 
+    kP = 0.05471
+    kI = 0.000665
+    kD = 0.001333
+
+       
+
+    Tolerance = 0.3
+    Setpoint = 1.2
+
+
+class AutoStrafeConstants:
+    kP = 0.05471
+    kI = 0.000665
+    kD = 0.001333
+
+       
+
+    Tolerance = 1
+        
+
+
+
+class AutoConstants:
+    kHeadingOffset = 90
+    kMaxSpeedMetersPerSecond = 7.5
+    kMaxAccelerationMetersPerSecondSquared = 5.2
+    kMaxAngularSpeedRadiansPerSecond = 3 * math.pi
+    kMaxAngularSpeedRadiansPerSecondSquared = 4* math.pi
+
+    kPXController = 1
+    kPYController = 1
+    kPThetaController = 1
+
 
 

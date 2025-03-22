@@ -1,4 +1,5 @@
 from math import pi
+import math
 from commands2 import Subsystem
 import wpilib
 from Subsystems.Swerve.SwerveModule import SwerveModule
@@ -165,7 +166,7 @@ class SwerveDrive(Subsystem):
         return (val / 360) * (2 * pi)
     
     
-    def getModulePositions(self, invertOdometry=False) -> tuple:
+    def getModulePositions(self, invertOdometry=True) -> tuple:
         """
         Returns the module position as a tuple.
 
@@ -197,7 +198,8 @@ class SwerveDrive(Subsystem):
         try:
             self.swervePoseEstimator.setVisionMeasurementStdDevs([.7,.7,9999999])
             if visionPose is not None:
-                self.swervePoseEstimator.addVisionMeasurement(visionPose[0], visionPose[1])
+                pose = Pose2d(Translation2d(visionPose[0][0], visionPose[0][1]), Rotation2d(((visionPose[0][5]/360)*2*math.pi)))
+                self.swervePoseEstimator.addVisionMeasurement(pose, visionPose[1])
             self.swervePoseEstimator.update(self.getYaw(), self.getModulePositions())
             self.currentHeading = self.swervePoseEstimator.getEstimatedPosition().rotation().degrees().real
                         

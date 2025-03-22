@@ -56,9 +56,9 @@ class RobotContainer:
         self.vision = Vision()
         self.swerveDrive = SwerveDrive(self.vision)
         self.climber = Climber()
-        self.elevator = Elevator()
-        self.coralina = Coralina()
-        self.gorgina = Gorgina()
+        # self.elevator = Elevator()
+        # self.coralina = Coralina()
+        # self.gorgina = Gorgina()
 
         self.driverController = wpilib.XboxController(0)
         self.operatorController = wpilib.XboxController(1)
@@ -95,9 +95,9 @@ class RobotContainer:
         algaePivotTrigger = commands2.button.Trigger(lambda: self.gorgina.getAlgaePivotPosition > 110)
 
         #Manual Intake and Outtake for Coral - Triggers Operator
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).onTrue(
-            SetElevatorPositionCmd(self.elevator, -6)
-        )
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).onTrue(
+        #     SetElevatorPositionCmd(self.elevator, -6)
+        # )
 
         # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.rightTrigger).whileTrue(
         #     ManualCoralIntakeCmd(self.coralina, .5)
@@ -113,24 +113,24 @@ class RobotContainer:
         # )
 
         # # Score Barge - Left Stick Button Operator
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kLeftStick).onTrue(
-            BargeScoreCmd(self.gorgina, self.elevator)
-        )
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kLeftStick).onTrue(
+        #     BargeScoreCmd(self.gorgina, self.elevator)
+        # )
 
         # # Algae removal on L3 & L2 - Up & Down D Pad Operator
-        commands2.button.POVButton(self.operatorController, wpilib.XboxController.POVUp).onTrue(
-            AlgaeLThreeCmd(self.gorgina)
-        )
-        commands2.button.POVButton(self.operatorController, wpilib.XboxController.POVDown).onTrue(
-            AlgaeLTwoCmd(self.gorgina)
-        )
+        # commands2.button.POVButton(self.operatorController, wpilib.XboxController.POVUp).onTrue(
+        #     AlgaeLThreeCmd(self.gorgina)
+        # )
+        # commands2.button.POVButton(self.operatorController, wpilib.XboxController.POVDown).onTrue(
+        #     AlgaeLTwoCmd(self.gorgina)
+        # )
 
-        # # Human Player Station - Right Trigger Driver
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.POVLeft).onTrue(
-            HumanPlayerCoralCmd(self.coralina, self.elevator)
-        )
+        # # # Human Player Station - Right Trigger Driver
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.POVLeft).onTrue(
+        #     HumanPlayerCoralCmd(self.coralina, self.elevator)
+        # )
 
-        algaePivotTrigger.onTrue(SetCoralPivotCmd(self.coralina, 90))
+        # algaePivotTrigger.onTrue(SetCoralPivotCmd(self.coralina, 90))
 
         # Align to coral column - Left & Right d pad Operator
         # commands2.button.povbutton(self.driverController, wpilib.XboxController.POVLeft).onTrue(
@@ -150,25 +150,25 @@ class RobotContainer:
 
         # Ready for comp cmds
 
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kX).onTrue(
-            ReefScoreLTwoCmd(self.coralina, self.elevator)
-        )
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kX).onTrue(
+        #     ReefScoreLTwoCmd(self.coralina, self.elevator)
+        # )
 
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kY).onTrue(
-            ReefScoreLThreeCmd(self.coralina, self.elevator)
-        )
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kY).onTrue(
+        #     ReefScoreLThreeCmd(self.coralina, self.elevator)
+        # )
 
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kB).onTrue(
-            ReefScoreLFourCmd(self.coralina, self.elevator)
-        )
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kB).onTrue(
+        #     ReefScoreLFourCmd(self.coralina, self.elevator)
+        # )
 
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kStart).onTrue(
-            GroundPickupCmd(self.gorgina, self.elevator)
-        )
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kStart).onTrue(
+        #     GroundPickupCmd(self.gorgina, self.elevator)
+        # )
 
-        commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).onTrue(
-            ScoreProcessorCmd(self.gorgina, self.elevator)
-        )
+        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).onTrue(
+        #     ScoreProcessorCmd(self.gorgina, self.elevator)
+        # )
 
 
         

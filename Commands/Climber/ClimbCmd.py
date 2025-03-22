@@ -19,12 +19,11 @@ class ClimbCmd(commands2.Command):
         pass
 
     def execute(self):
-        if self.power > .1 or self.power < -.1:
-            self.climber.setPower(self.power())
-        else:
-            self.climber.setPower(0)
+        self.climber.setPower(self.power())
 
     def end(self, interrupted: bool):
+        self.climber.setPower(0)
+
         pass
 
     def isFinished(self) -> bool:
