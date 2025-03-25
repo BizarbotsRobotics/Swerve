@@ -24,6 +24,8 @@ class Elevator(commands2.Subsystem):
         self.elevatorMotorTwo = TalonFX(ElevatorConstants.ELEVATOR_MOTOR_TWO)
 
         self.elevatorProxSensor = libgrapplefrc.LaserCAN(2)
+        self.positionSet = False
+        self.positionHold = 0
 
         # currentElevatorPosition = self.getElevatorPosition()
 
@@ -44,7 +46,7 @@ class Elevator(commands2.Subsystem):
         cfgElevatorOne.slot0.k_d = ElevatorConstants.ELEVATOR_D
         cfgElevatorOne.voltage.peak_forward_voltage = 12
         cfgElevatorOne.voltage.peak_reverse_voltage = -12
-        cfgElevatorOne.motor_output.inverted = configs.config_groups.InvertedValue.CLOCKWISE_POSITIVE
+        cfgElevatorOne.motor_output.inverted = configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
         cfgElevatorOne.torque_current.peak_forward_torque_current = 120
         cfgElevatorOne.torque_current.peak_reverse_torque_current = -120
 
@@ -57,7 +59,7 @@ class Elevator(commands2.Subsystem):
 
         self.setConfigs(self.elevatorMotorOne, cfgElevatorOne)
         self.setConfigs(self.elevatorMotorTwo, cfgElevatorTwo)
-        self.elevatorMotorOne.set_position(self.getElevatorDistanceTOF() - 2)
+        self.seedElevator()
 
         self.voltageControl = controls.DutyCycleOut(0)
 
@@ -85,13 +87,30 @@ class Elevator(commands2.Subsystem):
         pass
 
     def getElevatorDistanceTOF(self):
-        return self.elevatorProxSensor.get_measurement().distance_mm / 25.4
+        try:
+            return self.elevatorProxSensor.get_measurement().distance_mm / 25.4
+        except: 
+            return 10000000
+
+        
 
     def getElevatorRPM(self):
         return self.elevatorMotorOne.getBuiltInEncoderPosition()
     
     def setElevatorPower(self, power):
         self.elevatorMotorOne.set_control(self.voltageControl.with_output(power)) 
+        # if -.05 < power < .05 and not self.positionSet:
+        #     self.positionSet = True
+        #     self.positionHold = self.getElevatorPosition()
+        # elif -.05 < power < .05 and self.positionSet:    
+        #     self.setElevatorPosition(self.positionHold)
+        # else:
+        #     if power < 0:
+        #         power = power * .4
+        #     self.elevatorMotorOne.set_control(self.voltageControl.with_output(power)) 
+        #     self.positionSet = False
+
+        
 
     def getElevatorEncoder(self):
         pass
@@ -99,10 +118,13 @@ class Elevator(commands2.Subsystem):
     def setConfigs(self, motor:hardware.TalonFX, config:configs.TalonFXConfiguration) -> None:
         motorStatus = StatusCode.STATUS_CODE_NOT_INITIALIZED
         for i in range(5):
-            motorStatus = motor.configurator.apply(config, 0.05)
+            try:
+                motorStatus = motor.configurator.apply(config, 0.05)
 
-            if motorStatus.is_ok() and i > 2:
-                break
+                if motorStatus.is_ok() and i > 2:
+                    break
+            except:
+                pass
 
         if not motorStatus.is_ok() and self.debug_state:
             self.sd.putString("Could not configure device. Error: "+ str(motorStatus))
@@ -129,4 +151,8 @@ class Elevator(commands2.Subsystem):
             float: swerve motor encoder position.
         """
         return self.elevatorMotorOne.get_position().value % 1
+    
+    def seedElevator(self):
+        if self.getElevatorDistanceTOF() is not None:
+            self.elevatorMotorOne.set_position(0)
     

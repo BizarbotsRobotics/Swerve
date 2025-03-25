@@ -1,5 +1,6 @@
 
 import commands2
+import libgrapplefrc
 import ntcore
 import phoenix6
 from constants import IntakeConstants
@@ -25,18 +26,21 @@ class Gorgina(commands2.Subsystem):
         config.closedLoop.I(IntakeConstants.ALGAE_PIVOT_I)
         config.closedLoop.D(IntakeConstants.ALGAE_PIVOT_D)
         config.closedLoop.setFeedbackSensor(rev.ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder)
-        config.inverted(True)
+        config.inverted(False)
         config.setIdleMode(rev.SparkBaseConfig.IdleMode.kBrake)
         config.absoluteEncoder.zeroOffset(.58)
         config.absoluteEncoder.positionConversionFactor(360)
-        config.absoluteEncoder.inverted(True)
+        config.absoluteEncoder.inverted(False)
+
+        self.positionSet = False
+        self.positionHold = 0
 
 
 
         
         # config.encoder.positionConversionFactor = .2
 
-
+        self.coralinaProxSensor = libgrapplefrc.LaserCAN(0)
         self.pivotPID = self.algaePivotMotor.getClosedLoopController()
         
 
@@ -53,7 +57,7 @@ class Gorgina(commands2.Subsystem):
         Sends subsystem info to console or smart dashboard
         """
         # self.sd.putBoolean("Algae Stored", self.getNoteStored())
-        # self.sd.putNumber("ALgae Prox", self.prox)
+        self.sd.putNumber("ALgae Prox", self.getAlgaeProximity())
         self.sd.putNumber("Alage pivot ", self.getPivotPositionDegrees())
         pass
 
@@ -62,11 +66,20 @@ class Gorgina(commands2.Subsystem):
         self.algaeIntakeMotor.set(power)
 
     def setPivotPower(self, power):
-        self.algaePivotMotor.set(power)
+        self.algaePivotMotor.set(power*.5)
+        # if -.1 < power < .1 and not self.positionSet:
+        #     self.positionSet = True
+        #     self.positionHold = self.getAlgaePivotPosition()
+        # elif -.1 < power < .1 and self.positionSet:   
+        #     self.setAlgaePivotPosition(self.positionHold)
+        # else:
+        #     self.algaePivotMotor.set(power*.5)
+        #     self.positionSet = False
 
     def setAlgaePivotPosition(self, apa):
         self.pivotPID.setReference(apa, rev.SparkLowLevel.ControlType.kPosition)
 
+ 
     def getAlgaePivotPosition(self):
         return self.algaePivotMotor.getAbsoluteEncoder().getPosition()
     
@@ -94,6 +107,14 @@ class Gorgina(commands2.Subsystem):
     #     pass
 
     def getAlgaeStored(self):
-        if self.prox < 200:
+        if self.getAlgaeProximity() < 10:
             return True
         return False
+    
+    def getAlgaeProximity(self):
+        try:
+            return self.coralinaProxSensor.get_measurement().distance_mm
+        except: 
+            return 10000000
+        
+

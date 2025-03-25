@@ -19,10 +19,11 @@ class CoralIntakeCmd(commands2.Command):
 
     def execute(self):
 
-        self.coralina.setIntakePower(.35)
+        self.coralina.setIntakePower(-.9)
+        print("corsl")
 
     def end(self, interrupted: bool):
-        self.coralina.setIntakePower(.1)
+        self.coralina.setIntakePower(-.02)
         pass
 
     def isFinished(self) -> bool:

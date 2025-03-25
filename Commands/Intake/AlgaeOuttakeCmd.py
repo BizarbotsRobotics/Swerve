@@ -23,8 +23,8 @@ class AlgaeOuttakeCmd(commands2.Command):
         self.gorgina.setIntakePower(-.1)
 
     def end(self, interrupted: bool):
-        self.gorgina.setIntakePower(.1)
+        self.gorgina.setIntakePower(0)
         pass
 
     def isFinished(self) -> bool:
-        return False
+        return not self.gorgina.getAlgaeStored()

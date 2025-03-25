@@ -17,7 +17,4 @@ class AlgaeLThreeCmd(commands2.SequentialCommandGroup):
         self.elevator = elevator
         super().__init__()
         self.addRequirements(self.gorgina, self.elevator)
-        self.addCommands(SetAlgaePivotCmd(self.gorgina, 100), SetElevatorPositionCmd(self.elevator, 18.7), AlgaeIntakeCmd(self.gorgina, 200))
-
-    def isFinished(self) -> bool:
-        return self.gorgina.getAlgaeStored()
+        self.addCommands(SetAlgaePivotCmd(self.gorgina, 100), SetElevatorPositionCmd(self.elevator, 18.7), AlgaeIntakeCmd(self.gorgina))

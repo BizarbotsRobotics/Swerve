@@ -12,8 +12,10 @@ import wpilib
 
 from Commands.Climber.ClimbCmd import ClimbCmd
 from Commands.Drive.DriveReefCmd import DriveReefCmd
+from Commands.Intake.AlgaeIntakeCmd import AlgaeIntakeCmd
 from Commands.Intake.AlgaeLThreeCmd import AlgaeLThreeCmd
 from Commands.Intake.AlgaeLTwoCmd import AlgaeLTwoCmd
+from Commands.Intake.AlgaeOuttakeCmd import AlgaeOuttakeCmd
 from Commands.Intake.CoralIntakeCmd import CoralIntakeCmd
 from Commands.Intake.CoralOuttakeCmd import CoralOuttakeCmd
 from Commands.Intake.ManualCoralPivotCmd import ManualCoralPivotCmd
@@ -28,6 +30,8 @@ from Commands.Score.BargeScoreCmd import BargeScoreCmd
 from Commands.Score.ReefScoreLFourCmd import ReefScoreLFourCmd
 from Commands.Score.ReefScoreLThreeCmd import ReefScoreLThreeCmd
 from Commands.Score.ReefScoreLTwoCmd import ReefScoreLTwoCmd
+from Commands.Score.ScoreAlgaeCmd import ScoreAlgaeCmd
+from Commands.Score.ScoreCmd import ScoreCmd
 from Commands.Score.ScoreProcessorCmd import ScoreProcessorCmd
 from Commands.Intake.SetAlgaePivotCmd import SetAlgaePivotCmd
 from Commands.Intake.SetCoralPivotCmd import SetCoralPivotCmd
@@ -56,27 +60,27 @@ class RobotContainer:
         self.vision = Vision()
         self.swerveDrive = SwerveDrive(self.vision)
         self.climber = Climber()
-        # self.elevator = Elevator()
-        # self.coralina = Coralina()
-        # self.gorgina = Gorgina()
+        self.elevator = Elevator()
+        self.coralina = Coralina()
+        self.gorgina = Gorgina()
 
-        self.driverController = wpilib.XboxController(0)
-        self.operatorController = wpilib.XboxController(1)
+        self.driverController = commands2.button.CommandXboxController(0)
+        self.operatorController = commands2.button.CommandXboxController(1)
 
         # Driver Controller - Swerve Drive
         self.swerveDrive.setDefaultCommand(DriveCmd(self.swerveDrive, self.driverController.getLeftY, self.driverController.getLeftX, self.driverController.getRightX))
 
         # Operator Controller - Manual Elevator
-        #self.elevator.setDefaultCommand(ManualElevatorCmd(self.elevator, self.operatorController.getLeftY))
+        # self.elevator.setDefaultCommand(ManualElevatorCmd(self.elevator, self.operatorController.getLeftY))
 
 
-        #self.gorgina.setDefaultCommand(ManualAlgaeIntakeCmd(self.gorgina, self.operatorController.getRightY))
-        #self.coralina.setDefaultCommand(ManualCoralIntakeCmd(self.coralina, self.operatorController.getRightX))
+        # self.gorgina.setDefaultCommand(ManualAlgaePivotCmd(self.gorgina, self.operatorController.getRightY))
+        # self.coralina.setDefaultCommand(ManualCoralPivotCmd(self.coralina, self.operatorController.getRightX))
         
         # Comp Ready Cmds
 
         # Hang - Xbox Button Operator
-        self.climber.setDefaultCommand(ClimbCmd(self.climber, self.operatorController.getLeftY))
+        self.climber.setDefaultCommand(ClimbCmd(self.climber, self.operatorController.getRightY))
 
         self.configureButtonBindings()
 
@@ -92,54 +96,72 @@ class RobotContainer:
 
         self.chooser = wpilib.SendableChooser()
         self.chooser.addOption("Drive Forward", DriveCmd(self.swerveDrive, 0, 0.5, 0).withTimeout(3))
+
+        
         algaePivotTrigger = commands2.button.Trigger(lambda: self.gorgina.getAlgaePivotPosition > 110)
 
-        #Manual Intake and Outtake for Coral - Triggers Operator
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kA).onTrue(
-        #     SetElevatorPositionCmd(self.elevator, -6)
-        # )
+        self.operatorController.leftBumper().whileTrue(
+            ManualAlgaeIntakeCmd(self.gorgina, lambda: -1)
+        )
 
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.rightTrigger).whileTrue(
-        #     ManualCoralIntakeCmd(self.coralina, .5)
-        # )
+        self.operatorController.rightBumper().whileTrue(
+            ManualAlgaeIntakeCmd(self.gorgina, lambda: .5)
+        )
 
-        # Manual Intake and Outtake for Algae - Bumpers Operator
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kLeftBumper).whileTrue(
-        #     ManualAlgaeIntakeCmd(self.gorgina, -1)
-        # )
+        self.operatorController.axisGreaterThan(2, 0.1).whileTrue(
+            ManualCoralIntakeCmd(self.coralina, lambda: -.5)
+        )
 
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kRightBumper).whileTrue(
-        #     ManualAlgaeIntakeCmd(self.gorgina, .5)
-        # )
+        self.operatorController.axisGreaterThan(3, 0.1).whileTrue(
+            ManualCoralIntakeCmd(self.coralina, lambda: .5)
+        )
 
-        # # Score Barge - Left Stick Button Operator
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.Button.kLeftStick).onTrue(
-        #     BargeScoreCmd(self.gorgina, self.elevator)
-        # )
+        self.operatorController.a().onTrue(
+            ScoreCmd(self.gorgina, self.coralina, self.elevator)
+        )
 
-        # # Algae removal on L3 & L2 - Up & Down D Pad Operator
-        # commands2.button.POVButton(self.operatorController, wpilib.XboxController.POVUp).onTrue(
-        #     AlgaeLThreeCmd(self.gorgina)
-        # )
-        # commands2.button.POVButton(self.operatorController, wpilib.XboxController.POVDown).onTrue(
-        #     AlgaeLTwoCmd(self.gorgina)
-        # )
+        self.operatorController.povUp().onTrue(
+            ScoreAlgaeCmd(self.gorgina, self.coralina, self.elevator)
+        )
 
-        # # # Human Player Station - Right Trigger Driver
-        # commands2.button.JoystickButton(self.operatorController, wpilib.XboxController.POVLeft).onTrue(
-        #     HumanPlayerCoralCmd(self.coralina, self.elevator)
-        # )
+        self.operatorController.start().onTrue(
+            HumanPlayerCoralCmd(self.coralina, self.elevator, self.gorgina)
+        )
 
-        # algaePivotTrigger.onTrue(SetCoralPivotCmd(self.coralina, 90))
+        algaePivotTrigger.onTrue(SetCoralPivotCmd(self.coralina, 90))
 
-        # Align to coral column - Left & Right d pad Operator
-        # commands2.button.povbutton(self.driverController, wpilib.XboxController.POVLeft).onTrue(
-        #     DriveReefCmd(self.vision)
-        # )
+        self.operatorController.x().onTrue(
+            ReefScoreLTwoCmd(self.coralina, self.elevator, self.gorgina)
+        )
 
-        # commands2.button.povbutton(self.driverController, wpilib.XboxController.POVRight).onTrue(
-        #     DriveReefCmd(self.vision)
-        # )
+        self.operatorController.y().onTrue(
+            ReefScoreLThreeCmd(self.coralina, self.elevator, self.gorgina)
+        )
+
+        self.operatorController.b().onTrue(
+            ReefScoreLFourCmd(self.coralina, self.elevator, self.gorgina)
+        )
+
+        self.operatorController.povLeft().onTrue(
+            GroundPickupCmd(self.coralina, self.gorgina, self.elevator)
+        )
+
+        self.operatorController.povRight().onTrue(
+            ScoreProcessorCmd(self.gorgina, self.elevator)
+        )
+
+        self.operatorController.axisMagnitudeGreaterThan(1,.05).onTrue(
+            ManualElevatorCmd(self.elevator, self.operatorController.getLeftY)
+        )
+
+        self.operatorController.axisMagnitudeGreaterThan(4 ,.2).onTrue(
+            ManualCoralPivotCmd(self.coralina, lambda: (self.operatorController.getRightX())*.7)
+        )
+
+        self.operatorController.axisMagnitudeGreaterThan(5, .2).onTrue(
+            ManualAlgaePivotCmd(self.gorgina, lambda: (self.operatorController.getRightY() )*.7)
+        )
+
 
 
 

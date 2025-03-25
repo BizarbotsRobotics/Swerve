@@ -4,22 +4,23 @@ import wpilib
 
 from Commands.Intake.CoralIntakeCmd import CoralIntakeCmd
 from Commands.Intake.CoralOuttakeCmd import CoralOuttakeCmd
+from Commands.Intake.SetAlgaePivotCmd import SetAlgaePivotCmd
 from Commands.Intake.SetCoralPivotCmd import SetCoralPivotCmd
 from Commands.Elevator.SetElevatorPositionCmd import SetElevatorPositionCmd
 from Subsystems.Coralina.Coralina import Coralina
 from Subsystems.Elevator.Elevator import Elevator
+from Subsystems.Gorgina.Gorgina import Gorgina
+
 
 
 
 class ReefScoreLFourCmd(commands2.SequentialCommandGroup):
-    """A command that will score a coral on the fourth level of the reef"""
+    """A command that will score coral on level three"""
 
-    def __init__(self, coralina : Coralina, elevator: Elevator) -> None:
+    def __init__(self, coralina : Coralina, elevator: Elevator, gorgina: Gorgina) -> None:
         self.coralina = coralina
         self.elevator = elevator
+        self.gorgina = gorgina
         super().__init__()
-        self.addRequirements(self.coralina, self.elevator)
-        self.addCommands(SetCoralPivotCmd(self.coralina, 100), SetElevatorPositionCmd(self.elevator, 18.7), SetCoralPivotCmd(self.coralina, 200), CoralOuttakeCmd(self.coralina))
-
-    def isFinished(self) -> bool:
-        return not self.coralina.getCoralinaStored()
+        self.addRequirements(self.coralina, self.elevator, self.gorgina)
+        self.addCommands(SetCoralPivotCmd(self.coralina, 100), SetAlgaePivotCmd(self.gorgina, 161), SetElevatorPositionCmd(self.elevator, 15.3), SetCoralPivotCmd(self.coralina, 285))

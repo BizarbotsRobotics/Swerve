@@ -24,4 +24,4 @@ class ManualAlgaePivotCmd(commands2.Command):
 
     def isFinished(self) -> bool:
         # End when the controller is at the reference.
-        return True
+        return False

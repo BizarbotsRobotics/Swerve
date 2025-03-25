@@ -19,10 +19,6 @@ class ScoreProcessorCmd(commands2.SequentialCommandGroup):
         super().__init__()
 
         self.addRequirements(self.gorgina, self.elevator)
-        self.addCommands(SetElevatorPositionCmd(self.elevator, 3), SetAlgaePivotCmd(self.gorgina, 80), AlgaeOuttakeCmd(self.gorgina))
-
-
-    def isFinished(self) -> bool:
-        return not self.gorgina.getAlgaeStored()
+        self.addCommands(SetElevatorPositionCmd(self.elevator, 3), SetAlgaePivotCmd(self.gorgina, 70), commands2.WaitCommand(.5), AlgaeOuttakeCmd(self.gorgina))
     
 

@@ -66,8 +66,8 @@ class AlignCommand(commands2.command):
         translate = max(min(translate, 0.87), -0.87)
 
         # Update SmartDashboard for debugging
-        SmartDashboard.putNumber("TPID", value)
-        SmartDashboard.putNumber("TTX", x)
+        wpilib.SmartDashboard.putNumber("TPID", value)
+        wpilib.SmartDashboard.putNumber("TTX", x)
 
         # Calculate PID output for strafing
         z = self.l_LimelightSubsystem.getTargetPos(2)
@@ -76,8 +76,8 @@ class AlignCommand(commands2.command):
         strafe = max(min(strafe, 0.87), -0.87)
 
         # Update SmartDashboard for debugging
-        SmartDashboard.putNumber("SPID", value1)
-        SmartDashboard.putNumber("STZ", z)
+        wpilib.SmartDashboard.putNumber("SPID", value1)
+        wpilib.SmartDashboard.putNumber("STZ", z)
 
         # Calculate PID output for rotation
         a = self.l_LimelightSubsystem.getTargetPos(4)
@@ -86,8 +86,8 @@ class AlignCommand(commands2.command):
         rotate = max(min(rotate, 0.57), -0.57)
 
         # Update SmartDashboard for debugging
-        SmartDashboard.putNumber("RRY", a)
-        SmartDashboard.putNumber("RPID", rotate)
+        wpilib.SmartDashboard.putNumber("RRY", a)
+        wpilib.SmartDashboard.putNumber("RPID", rotate)
 
         # Drive the robot with calculated translation, strafe, and rotation
         self.s_Swerve.drive(

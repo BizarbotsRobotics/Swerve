@@ -71,7 +71,10 @@ class SwerveDrive(Subsystem):
         # )
 
         self.field = wpilib.Field2d()
-        wpilib.SmartDashboard.putData(self.field)
+        wpilib.SmartDashboard.putData("Robot Odometry",self.field)
+
+        self.field2 = wpilib.Field2d()
+        wpilib.SmartDashboard.putData("Vision", self.field2)
 
     def periodic(self):
         self.debug()
@@ -128,9 +131,7 @@ class SwerveDrive(Subsystem):
         
     def setRawModuleStates(self, states:tuple, isOpenLoop:bool) -> None:
         SwerveDrive4Kinematics.desaturateWheelSpeeds(states, self.getRobotVelocity(),
-                                                  SwerveConstants.DRIVE_MAX_SPEED,
-                                                  SwerveConstants.ATTAINABLE_MAX_TRANSLATIONAL_SPEED_METERS_PER_SECOND,
-                                                  SwerveConstants.ATTAINABLE_MAX_ROTATIONAL_VELOCITY_RADIANS_PER_SECOND)
+                                                  SwerveConstants.DRIVE_MAX_SPEED)
         counter = 0
         for swerve in self.swerveModules:
             swerve.setDesiredState(states[counter], isOpenLoop)
@@ -146,7 +147,7 @@ class SwerveDrive(Subsystem):
         self.drive(velocity, True, None)
 
     def debug(self):
-        self.field.setRobotPose(self.getPose())
+        
         for module in self.swerveModules:
             module.debug()
         self.sd.putNumber("x: ", self.swervePoseEstimator.getEstimatedPosition().x_feet)
@@ -194,14 +195,20 @@ class SwerveDrive(Subsystem):
         self.kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, pose.rotation()))
 
     def updateOdometry(self):
+        self.swervePoseEstimator.update(self.getYaw(), self.getModulePositions())
+        self.vision.update_megatag2_robot_orientation(self.getPose().rotation().degrees())
         visionPose = self.vision.getPose()
         try:
             self.swervePoseEstimator.setVisionMeasurementStdDevs([.7,.7,9999999])
             if visionPose is not None:
                 pose = Pose2d(Translation2d(visionPose[0][0], visionPose[0][1]), Rotation2d(((visionPose[0][5]/360)*2*math.pi)))
-                self.swervePoseEstimator.addVisionMeasurement(pose, visionPose[1])
-            self.swervePoseEstimator.update(self.getYaw(), self.getModulePositions())
+                #self.field2.setRobotPose(pose)
+                if abs(self.imu.get_angular_velocity_z_device()) < 720:
+                    if(pose.translation().distance(visionPose) < 1):
+                        self.swervePoseEstimator.addVisionMeasurement(pose, visionPose[1])
+            
             self.currentHeading = self.swervePoseEstimator.getEstimatedPosition().rotation().degrees().real
+            #self.field.setRobotPose(self.swervePoseEstimator.getEstimatedPosition())
                         
         except Exception as e:
             raise e
@@ -214,6 +221,31 @@ class SwerveDrive(Subsystem):
         # except Exception as e:
         #     raise e
         # return None
+
+    def limelightRangeProportional(self):  
+        kP = .1
+        ty = self.vision.getTY()
+        if ty is not None:
+            targetingForwardSpeed = ty * kP
+            targetingForwardSpeed *= SwerveConstants.DRIVE_MAX_SPEED
+            targetingForwardSpeed *= -1.0
+            return targetingForwardSpeed
+        return None
+
+    def limelightAimProportional(self):
+        kP = .035
+        tx = self.vision.getTX()
+
+        if tx is not None:
+            targetingAngularVelocity = tx * kP
+            
+            #Max rotation might be WAYYY too high
+            targetingAngularVelocity *= SwerveConstants.DRIVE_MAX_ROTATION
+
+            targetingAngularVelocity *= -1.0
+
+            return targetingAngularVelocity
+        return None
     
 
 

@@ -19,8 +19,7 @@ class ManualElevatorCmd(commands2.Command):
         pass
 
     def execute(self):
-
-        self.elevator.setElevatorPower(self.power())
+        self.elevator.setElevatorPower(-self.power())
 
     def end(self, interrupted: bool):
         pass
