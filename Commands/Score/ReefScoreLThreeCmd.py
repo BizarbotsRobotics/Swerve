@@ -22,4 +22,4 @@ class ReefScoreLThreeCmd(commands2.SequentialCommandGroup):
         self.gorgina = gorgina
         super().__init__()
         self.addRequirements(self.coralina, self.elevator, self.gorgina)
-        self.addCommands(SetCoralPivotCmd(self.coralina, 120), SetAlgaePivotCmd(self.gorgina, 155), SetElevatorPositionCmd(self.elevator, 8.5), SetCoralPivotCmd(self.coralina, 285))
+        self.addCommands(SetCoralPivotCmd(self.coralina, 186), SetAlgaePivotCmd(self.gorgina, 110), SetElevatorPositionCmd(self.elevator, 1.6), SetCoralPivotCmd(self.coralina, 100))

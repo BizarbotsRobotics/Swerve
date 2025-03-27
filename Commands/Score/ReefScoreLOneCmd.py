@@ -13,8 +13,9 @@ from Subsystems.Gorgina.Gorgina import Gorgina
 
 
 
-class HumanPlayerCoralCmd(commands2.SequentialCommandGroup):
-    """A command that will prepare coral intake from the human player station"""
+
+class ReefScoreLOneCmd(commands2.SequentialCommandGroup):
+    """A command that will score coral on level three"""
 
     def __init__(self, coralina : Coralina, elevator: Elevator, gorgina: Gorgina) -> None:
         self.coralina = coralina
@@ -22,4 +23,4 @@ class HumanPlayerCoralCmd(commands2.SequentialCommandGroup):
         self.gorgina = gorgina
         super().__init__()
         self.addRequirements(self.coralina, self.elevator, self.gorgina)
-        self.addCommands(SetCoralPivotCmd(self.coralina, 186), SetAlgaePivotCmd(self.gorgina, 100), SetElevatorPositionCmd(self.elevator, 0), SetCoralPivotCmd(self.coralina, 140), CoralIntakeCmd(self.coralina), SetCoralPivotCmd(self.coralina, 186), SetElevatorPositionCmd(self.elevator,0))
+        self.addCommands(SetCoralPivotCmd(self.coralina, 186), SetAlgaePivotCmd(self.gorgina, 110), SetElevatorPositionCmd(self.elevator, 0), SetCoralPivotCmd(self.coralina, 100))

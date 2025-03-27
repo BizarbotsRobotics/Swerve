@@ -9,8 +9,9 @@ import commands2
 import commands2.button
 import commands2.cmd
 import wpilib
-
+from pathplannerlib.auto import PathPlannerAuto
 from Commands.Climber.ClimbCmd import ClimbCmd
+from Commands.Drive.AlignTargetCmd import AlignTargetCmd
 from Commands.Drive.DriveReefCmd import DriveReefCmd
 from Commands.Intake.AlgaeIntakeCmd import AlgaeIntakeCmd
 from Commands.Intake.AlgaeLThreeCmd import AlgaeLThreeCmd
@@ -28,6 +29,7 @@ from Commands.Drive.DriveCmd import DriveCmd
 from Commands.Elevator.ManualElevatorCmd import ManualElevatorCmd
 from Commands.Score.BargeScoreCmd import BargeScoreCmd
 from Commands.Score.ReefScoreLFourCmd import ReefScoreLFourCmd
+from Commands.Score.ReefScoreLOneCmd import ReefScoreLOneCmd
 from Commands.Score.ReefScoreLThreeCmd import ReefScoreLThreeCmd
 from Commands.Score.ReefScoreLTwoCmd import ReefScoreLTwoCmd
 from Commands.Score.ScoreAlgaeCmd import ScoreAlgaeCmd
@@ -80,7 +82,7 @@ class RobotContainer:
         # Comp Ready Cmds
 
         # Hang - Xbox Button Operator
-        self.climber.setDefaultCommand(ClimbCmd(self.climber, self.operatorController.getRightY))
+        self.climber.setDefaultCommand(ClimbCmd(self.climber, self.operatorController.getLeftX))
 
         self.configureButtonBindings()
 
@@ -98,37 +100,46 @@ class RobotContainer:
         self.chooser.addOption("Drive Forward", DriveCmd(self.swerveDrive, 0, 0.5, 0).withTimeout(3))
 
         
-        algaePivotTrigger = commands2.button.Trigger(lambda: self.gorgina.getAlgaePivotPosition > 110)
+        algaePivotTrigger = commands2.button.Trigger(lambda: self.gorgina.getAlgaePivotPosition() > 110)
 
         self.operatorController.leftBumper().whileTrue(
-            ManualAlgaeIntakeCmd(self.gorgina, lambda: -1)
+            CoralIntakeCmd(self.coralina)
         )
 
         self.operatorController.rightBumper().whileTrue(
-            ManualAlgaeIntakeCmd(self.gorgina, lambda: .5)
+            CoralOuttakeCmd(self.coralina)
         )
 
         self.operatorController.axisGreaterThan(2, 0.1).whileTrue(
-            ManualCoralIntakeCmd(self.coralina, lambda: -.5)
+            AlgaeIntakeCmd(self.gorgina)
         )
 
         self.operatorController.axisGreaterThan(3, 0.1).whileTrue(
-            ManualCoralIntakeCmd(self.coralina, lambda: .5)
+            AlgaeOuttakeCmd(self.gorgina)
         )
+
+        # self.operatorController.a().onTrue(
+        #     SetElevatorPositionCmd(self.elevator, 1)
+        # )
 
         self.operatorController.a().onTrue(
             ScoreCmd(self.gorgina, self.coralina, self.elevator)
         )
 
-        self.operatorController.povUp().onTrue(
-            ScoreAlgaeCmd(self.gorgina, self.coralina, self.elevator)
-        )
+        # self.operatorController.povUp().onTrue(
+        #     ScoreAlgaeCmd(self.gorgina, self.coralina, self.elevator)
+        # )
 
         self.operatorController.start().onTrue(
             HumanPlayerCoralCmd(self.coralina, self.elevator, self.gorgina)
         )
+        # self.operatorController.start().onTrue(
+        #     SetAlgaePivotCmd(self.gorgina, 70)
+        # )
 
-        algaePivotTrigger.onTrue(SetCoralPivotCmd(self.coralina, 90))
+        self.operatorController.back().onTrue(
+            ReefScoreLOneCmd(self.coralina, self.elevator, self.gorgina)
+        )
 
         self.operatorController.x().onTrue(
             ReefScoreLTwoCmd(self.coralina, self.elevator, self.gorgina)
@@ -150,16 +161,32 @@ class RobotContainer:
             ScoreProcessorCmd(self.gorgina, self.elevator)
         )
 
-        self.operatorController.axisMagnitudeGreaterThan(1,.05).onTrue(
-            ManualElevatorCmd(self.elevator, self.operatorController.getLeftY)
+        self.operatorController.povUp().onTrue(
+            AlgaeLThreeCmd(self.gorgina, self.elevator, self.coralina)
+        )
+
+        self.operatorController.povDown().onTrue(
+            AlgaeLTwoCmd(self.gorgina, self.elevator, self.coralina)
+        )
+
+        self.operatorController.axisMagnitudeGreaterThan(5,.05).onTrue(
+            ManualElevatorCmd(self.elevator, self.operatorController.getRightY)
         )
 
         self.operatorController.axisMagnitudeGreaterThan(4 ,.2).onTrue(
             ManualCoralPivotCmd(self.coralina, lambda: (self.operatorController.getRightX())*.7)
         )
 
-        self.operatorController.axisMagnitudeGreaterThan(5, .2).onTrue(
-            ManualAlgaePivotCmd(self.gorgina, lambda: (self.operatorController.getRightY() )*.7)
+        self.operatorController.axisMagnitudeGreaterThan(0, .2).onTrue(
+            ManualAlgaePivotCmd(self.gorgina, lambda: (self.operatorController.getLeftX() )*.7)
+        )
+
+        self.operatorController.axisMagnitudeGreaterThan(1,.05).onTrue(
+            ClimbCmd(self.climber, self.operatorController.getLeftY)
+        )
+
+        self.driverController.a().whileTrue(
+            AlignTargetCmd(self.swerveDrive, self.vision, 0, 0, 0)
         )
 
 
@@ -206,7 +233,7 @@ class RobotContainer:
 
         :returns: the command to run in autonomous
         """
-        return self.chooser.getSelected()
+        return PathPlannerAuto('New Auto')
 
 def returnOne():
     return 1

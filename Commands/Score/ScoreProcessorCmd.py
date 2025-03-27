@@ -19,6 +19,6 @@ class ScoreProcessorCmd(commands2.SequentialCommandGroup):
         super().__init__()
 
         self.addRequirements(self.gorgina, self.elevator)
-        self.addCommands(SetElevatorPositionCmd(self.elevator, 3), SetAlgaePivotCmd(self.gorgina, 70), commands2.WaitCommand(.5), AlgaeOuttakeCmd(self.gorgina))
+        self.addCommands(SetElevatorPositionCmd(self.elevator, .5), SetAlgaePivotCmd(self.gorgina, 160), commands2.WaitCommand(.5), AlgaeOuttakeCmd(self.gorgina))
     
 

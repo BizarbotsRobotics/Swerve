@@ -28,4 +28,4 @@ class ScoreCmd(commands2.SequentialCommandGroup):
         super().__init__()
         self.addRequirements(self.gorgina, self.coralina, self.elevator)
 
-        self.addCommands(CoralOuttakeCmd(self.coralina), SetCoralPivotCmd(self.coralina, 120), SetAlgaePivotCmd(self.gorgina, 155), SetElevatorPositionCmd(self.elevator, 0))
+        self.addCommands(CoralOuttakeCmd(self.coralina), SetCoralPivotCmd(self.coralina, 186), SetAlgaePivotCmd(self.gorgina, 90), SetElevatorPositionCmd(self.elevator, 0))

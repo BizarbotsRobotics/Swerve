@@ -36,6 +36,9 @@ class Elevator(commands2.Subsystem):
         cfgElevatorTwo.motor_output.neutral_mode = configs.config_groups.NeutralModeValue.BRAKE
 
         self.elevatorMotorTwo.set_control(controls.Follower(ElevatorConstants.ELEVATOR_MOTOR_ONE, False))
+        self.elevatorAbsoluteEncoder = wpilib.Encoder(6,7)
+        self.elevatorAbsoluteEncoder.setDistancePerPulse(.0004882813)
+        self.elevatorAbsoluteEncoder.setReverseDirection(True)
 
         
 
@@ -44,18 +47,23 @@ class Elevator(commands2.Subsystem):
         cfgElevatorOne.slot0.k_p = ElevatorConstants.ELEVATOR_P
         cfgElevatorOne.slot0.k_i = ElevatorConstants.ELEVATOR_I
         cfgElevatorOne.slot0.k_d = ElevatorConstants.ELEVATOR_D
+        cfgElevatorOne.slot0.closed_loop_error = 0.02
         cfgElevatorOne.voltage.peak_forward_voltage = 12
         cfgElevatorOne.voltage.peak_reverse_voltage = -12
-        cfgElevatorOne.motor_output.inverted = configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+        cfgElevatorOne.motor_output.inverted = configs.config_groups.InvertedValue.CLOCKWISE_POSITIVE
         cfgElevatorOne.torque_current.peak_forward_torque_current = 120
         cfgElevatorOne.torque_current.peak_reverse_torque_current = -120
+        cfgElevatorOne.feedback.sensor_to_mechanism_ratio= 6.88
 
 
         motion_magic_configs = cfgElevatorOne.motion_magic
-        motion_magic_configs.motion_magic_cruise_velocity = 80 # Target cruise velocity of 80 rps
-        motion_magic_configs.motion_magic_acceleration = 40 # Target acceleration of 160 rps/s (0.5 seconds)
-        motion_magic_configs.motion_magic_jerk = 400
         
+        motion_magic_configs.motion_magic_cruise_velocity = 80 # Target cruise velocity of 80 rps
+        motion_magic_configs.motion_magic_acceleration = 20  # Target acceleration of 160 rps/s (0.5 seconds)
+        motion_magic_configs.motion_magic_jerk = 100
+
+
+        self.goal = 0
 
         self.setConfigs(self.elevatorMotorOne, cfgElevatorOne)
         self.setConfigs(self.elevatorMotorTwo, cfgElevatorTwo)
@@ -77,12 +85,15 @@ class Elevator(commands2.Subsystem):
         
     def periodic(self):
         self.telemetry()
+        if self.elevatorAbsoluteEncoder.getRate() < .05 and self.elevatorAbsoluteEncoder.getDistance() < .3:
+            self.elevatorMotorOne.set_position(self.elevatorAbsoluteEncoder.getDistance())
 
     def telemetry(self):
         """
         Sends subsystem info to console or smart dashboard
         """
-        self.sd.putNumber("Elevator position", self.getElevatorPosition())
+        self.sd.putNumber("Elevator position", self.elevatorAbsoluteEncoder.getDistance())
+        self.sd.putNumber("Elevator position motor", self.getElevatorPosition())
         self.sd.putNumber("Elevator Prox ", self.getElevatorDistanceTOF())
         pass
 
@@ -135,11 +146,12 @@ class Elevator(commands2.Subsystem):
         Args:
             position (float): a position value from 0-1.
         """
-        self.elevatorMotorOne.set_control(self.positionVoltage.with_position(position * 1.75))
+        self.elevatorMotorOne.set_control(self.positionVoltage.with_position(position))
         #self.elevatorMotorOne.set_position(position)
 
+
     def getElevatorPosition(self):
-        return self.elevatorMotorOne.get_position().value / 1.75
+        return self.elevatorMotorOne.get_position().value
 
     def clamp(self,v, minval, maxval):
         return max(min(v, maxval), minval)

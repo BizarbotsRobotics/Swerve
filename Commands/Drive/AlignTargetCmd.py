@@ -26,14 +26,15 @@ class AlignTargetCmd(commands2.Command):
         self.rotationSpeed = self.swerve.limelightAimProportional()
         self.xSpeed = self.swerve.limelightRangeProportional()
         if self.xSpeed is not None and self.rotationSpeed is not None:
-            self.swerve.driveNormal(self.xSpeed, self.y(), self.rotationSpeed)
+            self.swerve.driveNormal(self.xSpeed, self.y, self.rotationSpeed)
 
     def end(self, interrupted: bool):
         pass
 
     def isFinished(self) -> bool:
         # rotationSpeed value might be wrong
-        if abs(self.xSpeed) < 0.5 and abs(self.rotationSpeed) < 5:
-            return True
+        # if self.xSpeed is not None:
+        #     if abs(self.xSpeed) < 0.5 and abs(self.rotationSpeed) < 5:
+        #         return True
         return False
     

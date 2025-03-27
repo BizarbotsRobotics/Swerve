@@ -56,20 +56,19 @@ class SwerveDrive(Subsystem):
         config = RobotConfig.fromGUISettings()
 
         # # Configure the AutoBuilder last
-        # AutoBuilder.configureHolonomic(
-        #     self.getPose, # Robot pose supplier
-        #     self.resetOdometry, # Method to reset odometry (will be called if your auto has a starting pose)
-        #     self.getRobotVelocity, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-        #     self.setChasisSpeeds, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also outputs individual module feedforwards
-        #     PPHolonomicDriveController( # PPHolonomicController is the built in path following controller for holonomic drive trains
-        #         PIDConstants(5.0, 0.0, 0.0), # Translation PID constants
-        #         PIDConstants(5.0, 0.0, 0.0) # Rotation PID constants
-        #     ),
-        #     config, # The robot configuration
-        #     False, # Supplier to control path flipping based on alliance color
-        #     self # Reference to this subsystem to set requirements
-        # )
-
+        AutoBuilder.configure(
+            self.getPose, # Robot pose supplier
+            self.resetOdometry, # Method to reset odometry (will be called if your auto has a starting pose)
+            self.getRobotVelocity, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            self.setChassisSpeeds, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also outputs individual module feedforwards
+            PPHolonomicDriveController( # PPHolonomicController is the built in path following controller for holonomic drive trains
+                PIDConstants(4.0, 0.0, 0.0), # Translation PID constants
+                PIDConstants(4.0, 0.0, 0.0) # Rotation PID constants
+            ),
+            config, # The robot configuration
+            lambda: False, # Supplier to control path flipping based on alliance color
+            self # Reference to this subsystem to set requirements
+        )
         self.field = wpilib.Field2d()
         wpilib.SmartDashboard.putData("Robot Odometry",self.field)
 
@@ -83,14 +82,14 @@ class SwerveDrive(Subsystem):
     def initializeModules(self):
         try:
             self.frontLeft = SwerveModule(SwerveConstants.FRONT_LEFT_DRIVE, SwerveConstants.FRONT_LEFT_SWERVE,
-                                        SwerveConstants.FRONT_LEFT_ENCODER_PORT, SwerveConstants.FRONT_LEFT_ENCODER_OFFSET, swerveInvert=True)
+                                        SwerveConstants.FRONT_LEFT_ENCODER_PORT, SwerveConstants.FRONT_LEFT_ENCODER_OFFSET, swerveInvert=True, driveInvert=True)
             self.frontRight = SwerveModule(SwerveConstants.FRONT_RIGHT_DRIVE, SwerveConstants.FRONT_RIGHT_SWERVE,
-                                        SwerveConstants.FRONT_RIGHT_ENCODER_PORT, SwerveConstants.FRONT_RIGHT_ENCODER_OFFSET, swerveInvert=True, driveInvert=False)
+                                        SwerveConstants.FRONT_RIGHT_ENCODER_PORT, SwerveConstants.FRONT_RIGHT_ENCODER_OFFSET, swerveInvert=True, driveInvert=True)
             self.backLeft = SwerveModule(SwerveConstants.BACK_LEFT_DRIVE, SwerveConstants.BACK_LEFT_SWERVE,
-                                        SwerveConstants.BACK_LEFT_ENCODER_PORT, SwerveConstants.BACK_LEFT_ENCODER_OFFSET, swerveInvert=True
+                                        SwerveConstants.BACK_LEFT_ENCODER_PORT, SwerveConstants.BACK_LEFT_ENCODER_OFFSET, swerveInvert=True, driveInvert=True
                                         )
             self.backRight = SwerveModule(SwerveConstants.BACK_RIGHT_DRIVE, SwerveConstants.BACK_RIGHT_SWERVE,
-                                        SwerveConstants.BACK_RIGHT_ENCODER_PORT, SwerveConstants.BACK_RIGHT_ENCODER_OFFSET, swerveInvert=True)
+                                        SwerveConstants.BACK_RIGHT_ENCODER_PORT, SwerveConstants.BACK_RIGHT_ENCODER_OFFSET, swerveInvert=True, driveInvert=True)
             self.swerveModules = [self.frontLeft, self.frontRight, self.backLeft, self.backRight]
 
         except Exception as e:
@@ -131,12 +130,16 @@ class SwerveDrive(Subsystem):
         
     def setRawModuleStates(self, states:tuple, isOpenLoop:bool) -> None:
         SwerveDrive4Kinematics.desaturateWheelSpeeds(states, self.getRobotVelocity(),
-                                                  SwerveConstants.DRIVE_MAX_SPEED)
+                                                  SwerveConstants.DRIVE_MAX_SPEED, SwerveConstants.DRIVE_MAX_ROTATION, SwerveConstants.DRIVE_MAX_SPEED)
         counter = 0
         for swerve in self.swerveModules:
             swerve.setDesiredState(states[counter], isOpenLoop)
             counter+=1
 
+
+    def setChassisSpeeds(self, velocity, isOpenLoop):
+        swerveModuleStates = self.kinematics.toSwerveModuleStates(velocity)
+        self.setRawModuleStates(swerveModuleStates, isOpenLoop)
 
     def drive(self, velocity, isOpenLoop, centerOfRotationMeters):
         swerveModuleStates = self.kinematics.toSwerveModuleStates(velocity)
@@ -167,7 +170,7 @@ class SwerveDrive(Subsystem):
         return (val / 360) * (2 * pi)
     
     
-    def getModulePositions(self, invertOdometry=True) -> tuple:
+    def getModulePositions(self, invertOdometry=False) -> tuple:
         """
         Returns the module position as a tuple.
 
@@ -199,16 +202,19 @@ class SwerveDrive(Subsystem):
         self.vision.update_megatag2_robot_orientation(self.getPose().rotation().degrees())
         visionPose = self.vision.getPose()
         try:
-            self.swervePoseEstimator.setVisionMeasurementStdDevs([.7,.7,9999999])
+            self.swervePoseEstimator.setVisionMeasurementStdDevs([9999999,9999999,9999999])
             if visionPose is not None:
                 pose = Pose2d(Translation2d(visionPose[0][0], visionPose[0][1]), Rotation2d(((visionPose[0][5]/360)*2*math.pi)))
                 #self.field2.setRobotPose(pose)
-                if abs(self.imu.get_angular_velocity_z_device()) < 720:
-                    if(pose.translation().distance(visionPose) < 1):
-                        self.swervePoseEstimator.addVisionMeasurement(pose, visionPose[1])
+                if abs(self.imu.get_angular_velocity_z_device().value_as_double) < 720:
+                    print(pose.translation().distance(self.getPose().translation()))
+                    if(pose.translation().distance(self.getPose().translation()) < 1):
+                        print("abby is close")
+                        self.swervePoseEstimator.addVisionMeasurement(pose,wpilib.Timer.getFPGATimestamp())
+                
             
             self.currentHeading = self.swervePoseEstimator.getEstimatedPosition().rotation().degrees().real
-            #self.field.setRobotPose(self.swervePoseEstimator.getEstimatedPosition())
+            self.field.setRobotPose(self.swervePoseEstimator.getEstimatedPosition())
                         
         except Exception as e:
             raise e
@@ -223,12 +229,12 @@ class SwerveDrive(Subsystem):
         # return None
 
     def limelightRangeProportional(self):  
-        kP = .1
+        kP = .05
         ty = self.vision.getTY()
         if ty is not None:
             targetingForwardSpeed = ty * kP
             targetingForwardSpeed *= SwerveConstants.DRIVE_MAX_SPEED
-            targetingForwardSpeed *= -1.0
+            targetingForwardSpeed *= 1.0
             return targetingForwardSpeed
         return None
 
@@ -242,7 +248,7 @@ class SwerveDrive(Subsystem):
             #Max rotation might be WAYYY too high
             targetingAngularVelocity *= SwerveConstants.DRIVE_MAX_ROTATION
 
-            targetingAngularVelocity *= -1.0
+            targetingAngularVelocity *= 1.0
 
             return targetingAngularVelocity
         return None

@@ -22,4 +22,4 @@ class GroundPickupCmd(commands2.SequentialCommandGroup):
         super().__init__()
 
         self.addRequirements(self.gorgina, self.elevator)
-        self.addCommands(SetCoralPivotCmd(self.coralina, 100), SetElevatorPositionCmd(self.elevator, .5), SetAlgaePivotCmd(self.gorgina, 70), AlgaeIntakeCmd(self.gorgina), SetAlgaePivotCmd(self.gorgina, 100))
+        self.addCommands(SetCoralPivotCmd(self.coralina, 100), SetElevatorPositionCmd(self.elevator, .25), SetAlgaePivotCmd(self.gorgina, 180), AlgaeIntakeCmd(self.gorgina), SetAlgaePivotCmd(self.gorgina, 140), SetElevatorPositionCmd(self.elevator, 0))

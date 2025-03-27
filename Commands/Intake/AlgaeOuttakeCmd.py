@@ -20,7 +20,7 @@ class AlgaeOuttakeCmd(commands2.Command):
 
     def execute(self):
 
-        self.gorgina.setIntakePower(-.1)
+        self.gorgina.setIntakePower(.5)
 
     def end(self, interrupted: bool):
         self.gorgina.setIntakePower(0)

@@ -31,9 +31,12 @@ class Gorgina(commands2.Subsystem):
         config.absoluteEncoder.zeroOffset(.58)
         config.absoluteEncoder.positionConversionFactor(360)
         config.absoluteEncoder.inverted(False)
+        config.closedLoop.maxMotion.maxAcceleration(5)
+        config.closedLoop.maxMotion.maxVelocity(90)
 
         self.positionSet = False
         self.positionHold = 0
+
 
 
 

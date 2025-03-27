@@ -21,7 +21,6 @@ class SetCoralPivotCmd(commands2.Command):
     def execute(self):
 
         self.coralina.setCoralPivotPosition(self.position)
-        print("pibot")
 
     def end(self, interrupted: bool):
         pass

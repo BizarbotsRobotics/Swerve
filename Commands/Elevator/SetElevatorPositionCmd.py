@@ -22,12 +22,11 @@ class SetElevatorPositionCmd(commands2.Command):
     def execute(self):
 
         self.elevator.setElevatorPosition(self.position)
-        print("elevate")
 
     def end(self, interrupted: bool):
         pass
 
     def isFinished(self) -> bool:
-        if (self.position - 5) < self.elevator.getElevatorPosition() < (self.position + 5):
+        if (self.position - .5) < self.elevator.getElevatorPosition() < (self.position + .5):
             return True
         return False

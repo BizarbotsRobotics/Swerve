@@ -21,4 +21,4 @@ class ScoreAlgaeCmd(commands2.SequentialCommandGroup):
         self.gorgina = gorgina
         super().__init__()
         self.addRequirements(self.gorgina, self.coralina, self.elevator)
-        self.addCommands(AlgaeOuttakeCmd(self.gorgina), SetCoralPivotCmd(self.coralina, 100), SetAlgaePivotCmd(self.gorgina, 155), SetElevatorPositionCmd(self.elevator, 0))
+        self.addCommands(AlgaeOuttakeCmd(self.gorgina), SetCoralPivotCmd(self.coralina, 186), SetAlgaePivotCmd(self.gorgina, 155), SetElevatorPositionCmd(self.elevator, 0))

@@ -20,7 +20,7 @@ class ManualCoralIntakeCmd(commands2.Command):
 
     def execute(self):
 
-        self.coralina.setIntakePower(self.power()*.75)
+        self.coralina.setIntakePower(self.power())
 
     def end(self, interrupted: bool):
         self.coralina.setIntakePower(-.1)
